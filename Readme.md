@@ -120,34 +120,45 @@ python manage.py runserver
 ### 🗂 Структура проекту
 
 computer-shop/
-├── config/                 # Налаштування Django
-│   ├── settings.py
-│   ├── urls.py
-│   └── wsgi.py
-├── shop/                   # Головний додаток
-│   ├── models.py           # Моделі (Product, Category, Review)
-│   ├── views.py            # Контролери (фільтри, пошук)
-│   ├── admin.py            # Адмінпанель
-│   └── urls.py
-├── cart/                   # Додаток кошика
-│   ├── cart.py             # Логіка кошика
-│   ├── views.py
-│   └── urls.py
-├── payment/                # Додаток оплати
-│   ├── views.py            # LiqPay інтеграція
-│   └── urls.py
-├── services/               # Сервіси
-│   └── nova_poshta.py      # API Нової Пошти
-├── templates/              # Шаблони
-│   ├── base.html
-│   ├── shop/
-│   ├── cart/
-│   └── payment/
-├── static/                 # Статичні файли
-│   └── css/
-├── media/                  # Завантажені файли
+│
+├── config/ # Налаштування Django
+│ ├── settings.py
+│ ├── urls.py
+│ └── wsgi.py
+│
+├── shop/ # Головний додаток
+│ ├── models.py # Моделі (Product, Category, Review)
+│ ├── views.py # Контролери (фільтри, пошук)
+│ ├── admin.py # Адмінпанель
+│ └── urls.py
+│
+├── cart/ # Додаток кошика
+│ ├── cart.py # Логіка кошика
+│ ├── views.py
+│ └── urls.py
+│
+├── payment/ # Додаток оплати
+│ ├── views.py # LiqPay інтеграція
+│ └── urls.py
+│
+├── services/ # Сервіси
+│ └── nova_poshta.py # API Нової Пошти
+│
+├── templates/ # Шаблони
+│ ├── base.html
+│ ├── shop/
+│ ├── cart/
+│ └── payment/
+│
+├── static/ # Статичні файли
+│ └── css/
+│
+├── media/ # Завантажені файли
+│
 ├── requirements.txt
+├── .env.example
 └── README.md
+
 
 ### 🔧 API Ендпоінти
 Метод	URL	Опис
