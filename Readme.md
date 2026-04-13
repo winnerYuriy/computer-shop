@@ -1,4 +1,4 @@
-# 🛒 TechShop - Інтернет-магазин комп'ютерної техніки
+## 🛒 TechShop - Інтернет-магазин комп'ютерної техніки
 
 [![Django](https://img.shields.io/badge/Django-6.0-green.svg)](https://www.djangoproject.com/)
 [![Python](https://img.shields.io/badge/Python-3.14-blue.svg)](https://www.python.org/)
@@ -34,76 +34,76 @@
 
 ## 🛠 Технології
 
-# Backend
+### Backend
 - **Django 6.0** - основний фреймворк
 - **PostgreSQL 18** - база даних
 - **Python 3.14** - мова програмування
 
-# Frontend
+### Frontend
 - **Bootstrap 5** - CSS фреймворк
 - **Font Awesome 6** - іконки
 - **Select2** - красиві випадаючі списки
 - **jQuery** - AJAX запити
 
-# API та інтеграції
+### API та інтеграції
 - **LiqPay API** - прийом платежів
 - **Нова Пошта API** - розрахунок доставки, пошук відділень
 
 ## 📦 Встановлення
 
-# Передумови
+### Передумови
 - Python 3.14+
 - PostgreSQL 18+
 - Git
 
-# Крок 1: Клонування репозиторію
+### Крок 1: Клонування репозиторію
 
 git clone https://github.com/winnerYuriy/computer-shop.git
 cd computer-shop
 
-# Крок 2: Створення віртуального середовища
+### Крок 2: Створення віртуального середовища
 python -m venv venv
 source venv/bin/activate  # Linux/Mac
-# venv\Scripts\activate  # Windows
+venv\Scripts\activate  # Windows
 
-# Крок 3: Встановлення залежностей
+### Крок 3: Встановлення залежностей
 pip install -r requirements.txt
 
-# Крок 4: Налаштування змінних середовища
+### Крок 4: Налаштування змінних середовища
 cp .env.example .env
-# Відредагуйте .env файл, додавши свої ключі
+### Відредагуйте .env файл, додавши свої ключі
 Приклад .env файлу:
 SECRET_KEY=your-secret-key-here
 DEBUG=True
 
-# База даних
+### База даних
 DB_NAME=computer_shop
 DB_USER=shop_user
 DB_PASSWORD=your_password
 DB_HOST=localhost
 DB_PORT=5432
 
-# LiqPay
+### LiqPay
 LIQPAY_PUBLIC_KEY=sandbox_i1234567890
 LIQPAY_PRIVATE_KEY=sandbox_1234567890
 LIQPAY_SANDBOX=True
 
-# Нова Пошта
+### Нова Пошта
 NOVA_POSHTA_API_KEY=your_api_key
 
-# Кошик
+### Кошик
 CART_SESSION_ID=cart
 
-# Крок 5: Налаштування бази даних
+### Крок 5: Налаштування бази даних
 
-# Створіть базу даних в PostgreSQL
+### Створіть базу даних в PostgreSQL
 sudo -u postgres psql
 CREATE DATABASE computer_shop;
 CREATE USER shop_user WITH PASSWORD 'your_password';
 GRANT ALL PRIVILEGES ON DATABASE computer_shop TO shop_user;
 \q
 
-# Виконайте міграції
+### Виконайте міграції
 python manage.py makemigrations
 python manage.py migrate
 Крок 6: Завантаження тестових даних
@@ -117,50 +117,50 @@ bash
 python manage.py runserver
 Відкрийте в браузері: http://127.0.0.1:8000
 
-# 🗂 Структура проекту
-#
-# computer-shop/
-# │
-# ├── config/ # Налаштування Django
-# │ ├── settings.py
-# │ ├── urls.py
-# │ └── wsgi.py
-# │
-├── shop/ # Головний додаток
-│ ├── models.py # Моделі (Product, Category, Review)
-│ ├── views.py # Контролери (фільтри, пошук)
-│ ├── admin.py # Адмінпанель
-│ └── urls.py
-│
-├── cart/ # Додаток кошика
-│ ├── cart.py # Логіка кошика
-│ ├── views.py
-│ └── urls.py
-│
-├── payment/ # Додаток оплати
-│ ├── views.py # LiqPay інтеграція
-│ └── urls.py
-│
-├── services/ # Сервіси
-│ └── nova_poshta.py # API Нової Пошти
-│
-├── templates/ # Шаблони
-│ ├── base.html
-│ ├── shop/
-│ ├── cart/
-│ └── payment/
-│
-├── static/ # Статичні файли
-│ └── css/
-│
-├── media/ # Завантажені файли
-│
-├── requirements.txt
-├── .env.example
-└── README.md
+### 🗂 Структура проекту
+###
+### computer-shop/
+### │
+### ├── config/ # Налаштування Django
+### │ ├── settings.py
+### │ ├── urls.py
+### │ └── wsgi.py
+### │
+### ├── shop/ # Головний додаток
+### │ ├── models.py # Моделі (Product, Category, Review)
+### │ ├── views.py # Контролери (фільтри, пошук)
+### │ ├── admin.py # Адмінпанель
+### │ └── urls.py
+### │
+### ├── cart/ # Додаток кошика
+### │ ├── cart.py # Логіка кошика
+### │ ├── views.py
+### │ └── urls.py
+### │
+### ├── payment/ # Додаток оплати
+### │ ├── views.py # LiqPay інтеграція
+### │ └── urls.py
+### │
+### ├── services/ # Сервіси
+### │ └── nova_poshta.py # API Нової Пошти
+### │
+### ├── templates/ # Шаблони
+### │ ├── base.html
+### │ ├── shop/
+### │ ├── cart/
+### │ └── payment/
+### │
+### ├── static/ # Статичні файли
+### │ └── css/
+### │
+### ├── media/ # Завантажені файли
+### │
+### ├── requirements.txt
+### ├── .env.example
+### └── README.md
 
 
-# 🔧 API Ендпоінти
+### 🔧 API Ендпоінти
 Метод	URL	Опис
 GET	/cart/api/search-cities/	Пошук міст Нової Пошти
 GET	/cart/api/search-warehouses/	Пошук відділень
@@ -216,9 +216,9 @@ https://via.placeholder.com/600x300?text=Admin+Panel
 python manage.py collectstatic
 Приклад для PythonAnywhere
 bash
-# Налаштування WSGI
-# Налаштування статичних файлів
-# Налаштування медіа файлів
+#### Налаштування WSGI
+#### Налаштування статичних файлів
+#### Налаштування медіа файлів
 
 ### 🤝 Внесок
 Форкніть репозиторій
