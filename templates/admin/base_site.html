@@ -1,0 +1,29 @@
+<!-- templates/admin/base_site.html -->
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}TechShop - Адмінпанель{% endblock %}
+
+{% block branding %}
+<div style="display: flex; align-items: center; gap: 10px;">
+    <i class="fas fa-laptop-code" style="font-size: 28px; color: #3b82f6;"></i>
+    <h1 id="site-name" style="margin: 0;">
+        <a href="{% url 'admin:index' %}" style="color: #1a1a2e;">
+            TechShop <span style="font-size: 14px; color: #6c757d;">Адмінпанель</span>
+        </a>
+    </h1>
+</div>
+{% endblock %}
+
+{% block extrahead %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block nav-global %}
+<div style="margin-left: auto; display: flex; align-items: center; gap: 15px;">
+    <a href="/" target="_blank" style="color: #3b82f6; text-decoration: none;">
+        <i class="fas fa-store"></i> Перейти на сайт
+    </a>
+</div>
+{% endblock %}

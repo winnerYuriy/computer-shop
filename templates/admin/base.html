@@ -1,0 +1,209 @@
+<!-- templates/admin/base.html -->
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block extrahead %}
+{{ block.super }}
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    :root {
+        --primary: #3b82f6;
+        --secondary: #1e293b;
+        --accent: #e94560;
+        --bg-light: #f8fafc;
+        --text-dark: #0f172a;
+        --text-muted: #64748b;
+        --border: #e2e8f0;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+    }
+    
+    body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        background: var(--bg-light);
+    }
+    
+    /* Заголовок */
+    #header {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        color: white;
+        padding: 15px 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    #branding h1 a {
+        color: white !important;
+        font-weight: 700;
+        font-size: 24px;
+    }
+    
+    /* Бокове меню */
+    #nav-sidebar .module {
+        background: white;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        border: 1px solid var(--border);
+    }
+    
+    #nav-sidebar .module caption {
+        background: linear-gradient(135deg, var(--primary), #2563eb);
+        color: white;
+        border-radius: 12px 12px 0 0;
+        padding: 12px 15px;
+        font-weight: 600;
+    }
+    
+    #nav-sidebar .module th,
+    #nav-sidebar .module td {
+        padding: 10px 15px;
+    }
+    
+    /* Кнопки */
+    .button, input[type=submit], input[type=button], .submit-row input, a.button {
+        background: var(--primary);
+        border-radius: 8px;
+        padding: 8px 16px;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+    
+    .button:hover, input[type=submit]:hover, input[type=button]:hover {
+        background: #2563eb;
+        transform: translateY(-1px);
+    }
+    
+    .default {
+        background: var(--success) !important;
+    }
+    
+    /* Таблиці */
+    #changelist .results {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid var(--border);
+    }
+    
+    #result_list th {
+        background: var(--bg-light);
+        font-weight: 600;
+        color: var(--text-dark);
+        border-bottom: 2px solid var(--border);
+    }
+    
+    #result_list td {
+        border-bottom: 1px solid var(--border);
+        vertical-align: middle;
+    }
+    
+    #result_list tr:hover {
+        background: rgba(59,130,246,0.05);
+    }
+    
+    /* Фільтри */
+    #changelist-filter {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        padding: 15px;
+    }
+    
+    #changelist-filter h3 {
+        color: var(--text-dark);
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+    
+    #changelist-filter ul li a {
+        color: var(--text-muted);
+        transition: color 0.2s;
+    }
+    
+    #changelist-filter ul li a:hover {
+        color: var(--primary);
+    }
+    
+    #changelist-filter ul li.selected a {
+        color: var(--primary);
+        font-weight: 600;
+    }
+    
+    /* Форми */
+    .aligned .form-row {
+        padding: 12px 0;
+        border-bottom: 1px solid var(--border);
+    }
+    
+    .aligned label {
+        font-weight: 600;
+        color: var(--text-dark);
+    }
+    
+    /* Dashboard */
+    .dashboard #content {
+        background: white;
+        border-radius: 16px;
+        padding: 20px;
+        border: 1px solid var(--border);
+    }
+    
+    .module h2, .module caption {
+        background: linear-gradient(135deg, var(--primary), #2563eb);
+        border-radius: 8px 8px 0 0;
+        color: white;
+        font-weight: 600;
+    }
+    
+    /* Статуси в списках */
+    .status-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+    
+    .status-paid {
+        background: var(--success);
+        color: white;
+    }
+    
+    .status-new {
+        background: var(--primary);
+        color: white;
+    }
+    
+    .status-cancelled {
+        background: var(--danger);
+        color: white;
+    }
+    
+    /* Повідомлення */
+    .messagelist li {
+        border-radius: 8px;
+        padding: 12px 15px;
+        margin-bottom: 10px;
+    }
+    
+    .success {
+        background: #d1fae5;
+        color: #065f46;
+        border-left-color: var(--success);
+    }
+    
+    /* Адаптивність */
+    @media (max-width: 1024px) {
+        #changelist #changelist-form {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block footer %}
+<div style="text-align: center; padding: 20px; color: var(--text-muted); font-size: 12px; border-top: 1px solid var(--border); margin-top: 20px;">
+    <i class="fas fa-laptop-code"></i> TechShop Admin Panel &copy; 2026
+</div>
+{% endblock %}
