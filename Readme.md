@@ -34,42 +34,42 @@
 
 ## 🛠 Технології
 
-### Backend
+# Backend
 - **Django 6.0** - основний фреймворк
 - **PostgreSQL 18** - база даних
 - **Python 3.14** - мова програмування
 
-### Frontend
+# Frontend
 - **Bootstrap 5** - CSS фреймворк
 - **Font Awesome 6** - іконки
 - **Select2** - красиві випадаючі списки
 - **jQuery** - AJAX запити
 
-### API та інтеграції
+# API та інтеграції
 - **LiqPay API** - прийом платежів
 - **Нова Пошта API** - розрахунок доставки, пошук відділень
 
 ## 📦 Встановлення
 
-### Передумови
+# Передумови
 - Python 3.14+
 - PostgreSQL 18+
 - Git
 
-### Крок 1: Клонування репозиторію
+# Крок 1: Клонування репозиторію
 
 git clone https://github.com/winnerYuriy/computer-shop.git
 cd computer-shop
 
-### Крок 2: Створення віртуального середовища
+# Крок 2: Створення віртуального середовища
 python -m venv venv
 source venv/bin/activate  # Linux/Mac
 # venv\Scripts\activate  # Windows
 
-### Крок 3: Встановлення залежностей
+# Крок 3: Встановлення залежностей
 pip install -r requirements.txt
 
-### Крок 4: Налаштування змінних середовища
+# Крок 4: Налаштування змінних середовища
 cp .env.example .env
 # Відредагуйте .env файл, додавши свої ключі
 Приклад .env файлу:
@@ -94,7 +94,7 @@ NOVA_POSHTA_API_KEY=your_api_key
 # Кошик
 CART_SESSION_ID=cart
 
-### Крок 5: Налаштування бази даних
+# Крок 5: Налаштування бази даних
 
 # Створіть базу даних в PostgreSQL
 sudo -u postgres psql
@@ -117,15 +117,15 @@ bash
 python manage.py runserver
 Відкрийте в браузері: http://127.0.0.1:8000
 
-### 🗂 Структура проекту
-
-computer-shop/
-│
-├── config/ # Налаштування Django
-│ ├── settings.py
-│ ├── urls.py
-│ └── wsgi.py
-│
+# 🗂 Структура проекту
+#
+# computer-shop/
+# │
+# ├── config/ # Налаштування Django
+# │ ├── settings.py
+# │ ├── urls.py
+# │ └── wsgi.py
+# │
 ├── shop/ # Головний додаток
 │ ├── models.py # Моделі (Product, Category, Review)
 │ ├── views.py # Контролери (фільтри, пошук)
@@ -160,7 +160,7 @@ computer-shop/
 └── README.md
 
 
-### 🔧 API Ендпоінти
+# 🔧 API Ендпоінти
 Метод	URL	Опис
 GET	/cart/api/search-cities/	Пошук міст Нової Пошти
 GET	/cart/api/search-warehouses/	Пошук відділень
