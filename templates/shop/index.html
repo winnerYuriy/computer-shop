@@ -1,0 +1,91 @@
+<!-- templates/shop/index.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Головна - TechShop{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <div class="row align-items-center">
+        <div class="col-md-7">
+            <h1>Ласкаво просимо до TechShop!</h1>
+            <p class="lead">Найкращий магазин комп'ютерної та офісної техніки в Україні</p>
+            <p>Великий вибір ноутбуків, комп'ютерів, периферії та аксесуарів</p>
+            <a class="btn btn-primary btn-lg" href="{% url 'shop:catalog' %}">Перейти до каталогу</a>
+        </div>
+        <div class="col-md-5 text-center">
+            <i class="fas fa-laptop-code" style="font-size: 120px; color: #3b82f6;"></i>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-12">
+        <h2 class="mb-4">Новинки</h2>
+        <div class="row g-4">
+            {% for product in new_products %}
+            <div class="col-md-3 col-sm-6">
+                <div class="product-card">
+                    <div class="product-card-img">
+                        {% if product.image %}
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                        {% else %}
+                        <div class="bg-light text-center py-4">
+                            <i class="fas fa-image fa-2x text-muted"></i>
+                        </div>
+                        {% endif %}
+                        <span class="badge-new">Новинка</span>
+                    </div>
+                    <div class="product-card-body">
+                        <a href="{{ product.get_absolute_url }}" class="product-card-title">
+                            {{ product.name|truncatechars:40 }}
+                        </a>
+                        <div class="product-card-category">{{ product.category.name }}</div>
+                        <div class="product-card-price">{{ product.price }}₴</div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <p>Немає новинок</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-12">
+        <h2 class="mb-4">Хіти продажів</h2>
+        <div class="row g-4">
+            {% for product in bestsellers %}
+            <div class="col-md-3 col-sm-6">
+                <div class="product-card">
+                    <div class="product-card-img">
+                        {% if product.image %}
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                        {% else %}
+                        <div class="bg-light text-center py-4">
+                            <i class="fas fa-image fa-2x text-muted"></i>
+                        </div>
+                        {% endif %}
+                        <span class="badge-sale">Хіт</span>
+                    </div>
+                    <div class="product-card-body">
+                        <a href="{{ product.get_absolute_url }}" class="product-card-title">
+                            {{ product.name|truncatechars:40 }}
+                        </a>
+                        <div class="product-card-category">{{ product.category.name }}</div>
+                        <div class="product-card-price">{{ product.price }}₴</div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <p>Немає хітів продажів</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

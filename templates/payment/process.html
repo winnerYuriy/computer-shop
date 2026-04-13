@@ -1,0 +1,36 @@
+<!-- templates/payment/process.html -->
+{% extends 'base.html' %}
+
+{% block title %}Оплата замовлення #{{ order.id }} - TechShop{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Оплата замовлення #{{ order.id }}</h4>
+            </div>
+            <div class="card-body text-center">
+                <div class="mb-4">
+                    <p class="lead">Сума до сплати:</p>
+                    <h2 class="text-primary">{{ order.total_amount }}₴</h2>
+                </div>
+                
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> Після натискання кнопки ви будете перенаправлені на захищену сторінку платіжної системи LiqPay.
+                </div>
+                
+                <div class="text-center">
+                    {{ form|safe }}
+                </div>
+                
+                <div class="mt-4">
+                    <a href="{% url 'cart:checkout' %}" class="btn btn-link">
+                        <i class="fas fa-arrow-left"></i> Повернутись до оформлення
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

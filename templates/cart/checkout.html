@@ -1,0 +1,134 @@
+<!-- templates/cart/checkout.html -->
+{% extends 'base.html' %}
+
+{% block title %}Оформлення замовлення - TechShop{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <h1 class="mb-4">Оформлення замовлення</h1>
+        
+        <form method="post" id="checkoutForm">
+            {% csrf_token %}
+            
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Контактні дані</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="full_name" class="form-label required">ПІБ</label>
+                        <input type="text" class="form-control" id="full_name" name="full_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="phone" class="form-label required">Телефон</label>
+                        <input type="tel" class="form-control" id="phone" name="phone" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label required">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Доставка</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label required">Спосіб доставки</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="delivery_method" id="nova_post" value="nova_post" checked>
+                            <label class="form-check-label" for="nova_post">Нова Пошта (за адресою відділення)</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="delivery_method" id="courier" value="courier">
+                            <label class="form-check-label" for="courier">Кур'єр по Києву</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="delivery_method" id="pickup" value="pickup">
+                            <label class="form-check-label" for="pickup">Самовивіз (м. Київ, вул. Технічна, 1)</label>
+                        </div>
+                    </div>
+                    
+                    <div id="novaPostFields">
+                        <div class="mb-3">
+                            <label for="city" class="form-label">Місто</label>
+                            <input type="text" class="form-control" id="city" name="city">
+                        </div>
+                        <div class="mb-3">
+                            <label for="nova_post_office" class="form-label">Відділення Нової Пошти</label>
+                            <input type="text" class="form-control" id="nova_post_office" name="nova_post_office">
+                        </div>
+                    </div>
+                    
+                    <div id="addressField" style="display: none;">
+                        <div class="mb-3">
+                            <label for="address" class="form-label">Адреса доставки</label>
+                            <input type="text" class="form-control" id="address" name="address">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="comment" class="form-label">Коментар до замовлення</label>
+                        <textarea class="form-control" id="comment" name="comment" rows="3"></textarea>
+                    </div>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-lg w-100">Продовжити до оплати</button>
+        </form>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="cart-summary">
+            <h5 class="mb-3">Ваше замовлення</h5>
+            {% for item in cart %}
+            <div class="d-flex justify-content-between mb-2">
+                <span>{{ item.product.name }} x {{ item.quantity }}</span>
+                <span>{{ item.total_price }}₴</span>
+            </div>
+            {% endfor %}
+            <hr>
+            <div class="d-flex justify-content-between fw-bold">
+                <span>Всього:</span>
+                <span>{{ cart.get_total_price }}₴</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Показуємо/ховаємо поля залежно від способу доставки
+    const deliveryRadios = document.querySelectorAll('input[name="delivery_method"]');
+    const novaPostFields = document.getElementById('novaPostFields');
+    const addressField = document.getElementById('addressField');
+    
+    deliveryRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.value === 'courier') {
+                novaPostFields.style.display = 'none';
+                addressField.style.display = 'block';
+            } else if (this.value === 'pickup') {
+                novaPostFields.style.display = 'none';
+                addressField.style.display = 'none';
+            } else {
+                novaPostFields.style.display = 'block';
+                addressField.style.display = 'none';
+            }
+        });
+    });
+</script>
+
+<style>
+    .required:after {
+        content: " *";
+        color: red;
+    }
+    .cart-summary {
+        position: sticky;
+        top: 100px;
+    }
+</style>
+{% endblock %}

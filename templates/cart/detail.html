@@ -1,0 +1,65 @@
+<!-- templates/cart/detail.html -->
+{% extends 'base.html' %}
+
+{% block title %}Кошик - TechShop{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Кошик</h1>
+    
+    {% if cart %}
+    <div class="table-responsive">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Товар</th>
+                    <th>Кількість</th>
+                    <th>Ціна</th>
+                    <th>Сума</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in cart %}
+                <tr>
+                    <td>
+                        <strong>{{ item.product.name }}</strong>
+                        <br>
+                        <small class="text-muted">{{ item.product.category.name }}</small>
+                    </td>
+                    <td>
+                        <form action="{% url 'cart:cart_update' item.product.id %}" method="post" class="d-inline">
+                            {% csrf_token %}
+                            <input type="number" name="quantity" value="{{ item.quantity }}" min="1" style="width: 70px;" class="form-control d-inline-block">
+                            <button type="submit" class="btn btn-sm btn-secondary">Оновити</button>
+                        </form>
+                    </td>
+                    <td>{{ item.price }}₴</td>
+                    <td>{{ item.total_price }}₴</td>
+                    <td>
+                        <form action="{% url 'cart:cart_remove' item.product.id %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-danger">Видалити</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+                <tr class="table-active">
+                    <td colspan="3" class="text-end"><strong>Загальна сума:</strong></td>
+                    <td colspan="2"><strong>{{ cart.get_total_price }}₴</strong></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="d-flex justify-content-between">
+        <a href="{% url 'shop:catalog' %}" class="btn btn-secondary">Продовжити покупки</a>
+          <a href="{% url 'cart:checkout' %}" class="btn btn-primary">Оформити замовлення</a>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        Ваш кошик порожній. <a href="{% url 'shop:catalog' %}">Перейти до каталогу</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
