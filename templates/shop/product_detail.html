@@ -1,103 +1,88 @@
-<!-- templates/shop/product_detail.html -->
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}{{ product.name }} - TechShop{% endblock %}
+{% block title %}{{ product.title }} - TechShop{% endblock %}
 
 {% block content %}
 <div class="container py-4">
-    <div class="row justify-content-center">
-        <!-- Галерея зображень - ліва колонка -->
+    <div class="row">
+        <!-- Галерея зображень -->
         <div class="col-md-5 col-lg-4 mb-4">
             <div class="product-gallery">
-                <!-- Головне зображення -->
                 <div class="main-image" id="mainImage">
-                    {% if product.image %}
-                    <img src="{{ product.image.url }}" alt="{{ product.name }}" id="mainImageImg">
+                    {% if product.main_image %}
+                    <img src="{{ product.main_image.url }}" alt="{{ product.title }}" id="mainImageImg">
                     {% else %}
                     <img src="{% static 'images/no-image.png' %}" alt="Немає зображення" id="mainImageImg">
                     {% endif %}
                 </div>
-                
-                <!-- Мініатюри додаткових зображень -->
-                {% if product.gallery_images %}
+                {% if product.additional_images.all %}
                 <div class="thumbnail-list">
-                    {% for img_path in product.gallery_images %}
-                    <div class="thumbnail" data-image="{{ img_path }}">
-                        <img src="{{ img_path }}" alt="Фото {{ forloop.counter }}">
+                    {% for img in product.additional_images.all %}
+                    <div class="thumbnail" data-image="{{ img.image.url }}">
+                        <img src="{{ img.image.url }}" alt="{{ img.alt_text|default:'Фото' }}">
                     </div>
                     {% endfor %}
                 </div>
                 {% endif %}
             </div>
         </div>
-        
-        <!-- Інформація про товар - права колонка -->
+
+        <!-- Інформація про товар -->
         <div class="col-md-7 col-lg-6">
-            <!-- Хлібні крихти -->
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="{% url 'shop:home' %}">Головна</a></li>
                     <li class="breadcrumb-item"><a href="{% url 'shop:catalog' %}">Каталог</a></li>
                     <li class="breadcrumb-item"><a href="{{ product.category.get_absolute_url }}">{{ product.category.name }}</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">{{ product.name|truncatechars:40 }}</li>
+                    <li class="breadcrumb-item active">{{ product.title|truncatechars:40 }}</li>
                 </ol>
             </nav>
-            
-            <h1 class="mb-3 fs-2">{{ product.name }}</h1>
-            
-            <!-- Рейтинг -->
+
+            <h1 class="mb-3 fs-2">{{ product.title }}</h1>
+
             <div class="mb-3">
-                <i class="fas fa-star text-warning"></i>
-                <i class="fas fa-star text-warning"></i>
-                <i class="fas fa-star text-warning"></i>
-                <i class="fas fa-star text-warning"></i>
-                <i class="fas fa-star-half-alt text-warning"></i>
-                <span class="text-muted ms-2">(120 відгуків)</span>
+                {% for i in "12345"|make_list %}
+                    {% if forloop.counter <= product.rating %}
+                        <i class="fas fa-star text-warning"></i>
+                    {% else %}
+                        <i class="far fa-star text-warning"></i>
+                    {% endif %}
+                {% endfor %}
+                <span class="text-muted ms-2">({{ product.reviews_count }} відгуків)</span>
             </div>
-            
-            <!-- Ціна -->
+
             <div class="mb-4">
                 {% if product.old_price %}
                 <span class="text-decoration-line-through text-muted fs-5">{{ product.price }}₴</span>
                 <span class="text-danger fs-1 fw-bold ms-2">{{ product.old_price }}₴</span>
-                <span class="badge bg-danger ms-2 fs-6">-{{ product.discount_percent }}%</span>
+                <span class="badge bg-danger ms-2 fs-6">-{{ product.discount }}%</span>
                 {% else %}
                 <span class="fs-1 fw-bold text-primary">{{ product.price }}₴</span>
                 {% endif %}
             </div>
-            
-            <!-- Статус -->
+
             <div class="mb-4">
-                {% if product.is_in_stock %}
-                <span class="badge bg-success fs-6 p-2">
-                    <i class="fas fa-check-circle"></i> В наявності ({{ product.stock }} шт.)
-                </span>
+                {% if product.is_available %}
+                <span class="badge bg-success fs-6 p-2"><i class="fas fa-check-circle"></i> В наявності ({{ product.quantity }} шт.)</span>
                 {% else %}
-                <span class="badge bg-danger fs-6 p-2">
-                    <i class="fas fa-times-circle"></i> Немає в наявності
-                </span>
+                <span class="badge bg-danger fs-6 p-2"><i class="fas fa-times-circle"></i> Немає в наявності</span>
                 {% endif %}
-                
-                {% if product.is_new %}
-                <span class="badge bg-info fs-6 p-2 ms-2">
-                    <i class="fas fa-star"></i> Новинка
-                </span>
-                {% endif %}
-                
-                {% if product.is_bestseller %}
-                <span class="badge bg-warning text-dark fs-6 p-2 ms-2">
-                    <i class="fas fa-fire"></i> Хіт продажів
-                </span>
-                {% endif %}
+
+                {% with labels=product.get_promotion_labels %}
+                    {% if 'Новинка' in labels %}
+                        <span class="badge bg-info fs-6 p-2 ms-2"><i class="fas fa-star"></i> Новинка</span>
+                    {% endif %}
+                    {% if 'Хіт продажів' in labels %}
+                        <span class="badge bg-warning text-dark fs-6 p-2 ms-2"><i class="fas fa-fire"></i> Хіт продажів</span>
+                    {% endif %}
+                {% endwith %}
             </div>
-            
-            <!-- Короткий опис -->
+
             <div class="mb-4">
                 <p>{{ product.description|truncatewords:40 }}</p>
             </div>
-            
-            <!-- Форма додавання в кошик -->
+
             <div class="card bg-light mb-4">
                 <div class="card-body">
                     <form action="{% url 'cart:cart_add' product.id %}" method="post">
@@ -105,19 +90,10 @@
                         <div class="row align-items-end g-3">
                             <div class="col-4">
                                 <label for="quantity" class="form-label fw-bold">Кількість:</label>
-                                <input type="number" 
-                                       name="quantity" 
-                                       id="quantity" 
-                                       value="1" 
-                                       min="1" 
-                                       max="{{ product.stock }}"
-                                       class="form-control"
-                                       {% if not product.is_in_stock %}disabled{% endif %}>
+                                <input type="number" name="quantity" id="quantity" value="1" min="1" max="{{ product.quantity }}" class="form-control" {% if not product.is_available %}disabled{% endif %}>
                             </div>
                             <div class="col-8">
-                                <button type="submit" 
-                                        class="btn btn-primary w-100 py-2"
-                                        {% if not product.is_in_stock %}disabled{% endif %}>
+                                <button type="submit" class="btn btn-primary w-100 py-2" {% if not product.is_available %}disabled{% endif %}>
                                     <i class="fas fa-shopping-cart"></i> Додати до кошика
                                 </button>
                             </div>
@@ -125,100 +101,34 @@
                     </form>
                 </div>
             </div>
-            
-            <!-- Характеристики -->
-            {% with attributes=product.get_attributes_by_category %}
-            {% if attributes %}
+
+            {% if product.attributes or product.property_values.all %}
             <div class="card">
                 <div class="card-header bg-white">
                     <h5 class="mb-0"><i class="fas fa-list-ul"></i> Характеристики</h5>
                 </div>
                 <div class="card-body p-0">
                     <table class="table table-sm table-borderless mb-0 specs-table">
-                        {% for attr in attributes %}
-                        <tr>
-                            <td class="ps-3">{{ attr.attribute.name }}:</td>
-                            <td class="pe-3">{{ attr.value.get_display_value|safe }}</td>
-                        </tr>
+                        {% if product.attributes %}
+                            {% for key, value in product.attributes.items %}
+                            <tr>
+                                <td class="ps-3">{{ key }}:</td>
+                                <td class="pe-3">{{ value }}</td>
+                            </tr>
+                            {% endfor %}
+                        {% endif %}
+                        {% for pv in product.property_values.all %}
+                            <tr>
+                                <td class="ps-3">{{ pv.property.name }}:</td>
+                                <td class="pe-3">{{ pv.value }}</td>
+                            </tr>
                         {% endfor %}
                     </table>
                 </div>
             </div>
             {% endif %}
-            {% endwith %}
         </div>
     </div>
-
-    <!-- Відгуки -->
-<div class="row mt-5">
-    <div class="col-12">
-        <hr>
-        <h3 class="mb-4"><i class="fas fa-comments"></i> Відгуки</h3>
-
-        <!-- Список відгуків -->
-        {% if reviews %}
-        <div class="list-group">
-            {% for review in reviews %}
-            <div class="list-group-item">
-                <div class="d-flex justify-content-between align-items-center">
-                    <strong>{{ review.user_name }}</strong>
-                    <div class="text-warning">
-                        {% for i in "12345"|make_list %}
-                            {% if forloop.counter <= review.rating %}
-                                <i class="fas fa-star"></i>
-                            {% else %}
-                                <i class="far fa-star"></i>
-                            {% endif %}
-                        {% endfor %}
-                    </div>
-                </div>
-                <small class="text-muted">{{ review.created_at|date:"d.m.Y" }}</small>
-                <p class="mt-2 mb-0">{{ review.comment }}</p>
-            </div>
-            {% endfor %}
-        </div>
-        {% else %}
-        <p class="text-muted">Ще немає відгуків. Будьте першим!</p>
-        {% endif %}
-        <br>
-        <!-- Форма додавання відгуку -->
-        <div class="card mb-4">
-            <div class="card-header bg-white">
-                <h5 class="mb-0">Залишити відгук</h5>
-            </div>
-            <div class="card-body">
-                <form method="post" action="{% url 'shop:add_review' product.id %}">
-                    {% csrf_token %}
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Ваше ім'я *</label>
-                            <input type="text" name="user_name" class="form-control" required>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Оцінка *</label>
-                            <select name="rating" class="form-select" required>
-                                <option value="">Оберіть оцінку</option>
-                                <option value="5">5 ★★★★★</option>
-                                <option value="4">4 ★★★★☆</option>
-                                <option value="3">3 ★★★☆☆</option>
-                                <option value="2">2 ★★☆☆☆</option>
-                                <option value="1">1 ★☆☆☆☆</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Коментар *</label>
-                        <textarea name="comment" class="form-control" rows="3" required></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Надіслати відгук</button>
-                </form>
-            </div>
-        </div>
-        
-        
-    </div>
-</div>
-
 
     <!-- Схожі товари -->
     {% if related_products %}
@@ -231,8 +141,8 @@
                 <div class="col-6 col-md-3">
                     <div class="product-card">
                         <div class="product-card-img">
-                            {% if related.image %}
-                            <img src="{{ related.image.url }}" alt="{{ related.name }}">
+                            {% if related.main_image %}
+                            <img src="{{ related.main_image.url }}" alt="{{ related.title }}">
                             {% else %}
                             <div class="bg-light text-center py-4">
                                 <i class="fas fa-image fa-2x text-muted"></i>
@@ -241,7 +151,7 @@
                         </div>
                         <div class="product-card-body">
                             <a href="{{ related.get_absolute_url }}" class="product-card-title">
-                                {{ related.name|truncatechars:40 }}
+                                {{ related.title|truncatechars:40 }}
                             </a>
                             <div class="product-card-category">{{ related.category.name }}</div>
                             <div class="product-card-price">{{ related.price }}₴</div>
@@ -253,9 +163,74 @@
         </div>
     </div>
     {% endif %}
+
+    <!-- Відгуки -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <hr>
+            <h3 class="mb-4"><i class="fas fa-comments"></i> Відгуки</h3>
+
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Залишити відгук</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'shop:add_review' product.id %}">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Ваше ім'я *</label>
+                                <input type="text" name="user_name" class="form-control" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Оцінка *</label>
+                                <select name="rating" class="form-select" required>
+                                    <option value="">Оберіть оцінку</option>
+                                    <option value="5">5 ★★★★★</option>
+                                    <option value="4">4 ★★★★☆</option>
+                                    <option value="3">3 ★★★☆☆</option>
+                                    <option value="2">2 ★★☆☆☆</option>
+                                    <option value="1">1 ★☆☆☆☆</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Коментар *</label>
+                            <textarea name="comment" class="form-control" rows="3" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Надіслати відгук</button>
+                    </form>
+                </div>
+            </div>
+
+            {% if reviews %}
+            <div class="list-group">
+                {% for review in reviews %}
+                <div class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <strong>{{ review.user_name }}</strong>
+                        <div class="text-warning">
+                            {% for i in "12345"|make_list %}
+                                {% if forloop.counter <= review.rating %}
+                                    <i class="fas fa-star"></i>
+                                {% else %}
+                                    <i class="far fa-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <small class="text-muted">{{ review.created_at|date:"d.m.Y" }}</small>
+                    <p class="mt-2 mb-0">{{ review.comment }}</p>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted">Ще немає відгуків. Будьте першим!</p>
+            {% endif %}
+        </div>
+    </div>
 </div>
 
-<!-- Lightbox для перегляду зображень -->
 <div id="lightbox" class="lightbox">
     <span class="lightbox-close">&times;</span>
     <img id="lightboxImg" src="">
@@ -264,44 +239,36 @@
 
 {% block extra_js %}
 <script>
-    // Галерея зображень
     const mainImage = document.getElementById('mainImageImg');
     const thumbnails = document.querySelectorAll('.thumbnail');
     const lightbox = document.getElementById('lightbox');
     const lightboxImg = document.getElementById('lightboxImg');
     const lightboxClose = document.querySelector('.lightbox-close');
-    
-    // Зміна головного зображення при кліку на мініатюру
+
     thumbnails.forEach(thumb => {
         thumb.addEventListener('click', function() {
             const imageUrl = this.dataset.image;
             mainImage.src = imageUrl;
-            
             thumbnails.forEach(t => t.classList.remove('active'));
             this.classList.add('active');
         });
     });
-    
-    // Відкриття lightbox
+
     document.getElementById('mainImage')?.addEventListener('click', function() {
         lightbox.classList.add('active');
         lightboxImg.src = mainImage.src;
     });
-    
+
     lightboxClose.addEventListener('click', function() {
         lightbox.classList.remove('active');
     });
-    
+
     lightbox.addEventListener('click', function(e) {
-        if (e.target === lightbox) {
-            lightbox.classList.remove('active');
-        }
+        if (e.target === lightbox) lightbox.classList.remove('active');
     });
-    
+
     document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && lightbox.classList.contains('active')) {
-            lightbox.classList.remove('active');
-        }
+        if (e.key === 'Escape' && lightbox.classList.contains('active')) lightbox.classList.remove('active');
     });
 </script>
 {% endblock %}

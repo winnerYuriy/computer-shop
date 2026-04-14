@@ -100,20 +100,24 @@ CART_SESSION_ID=cart
 sudo -u postgres psql
 CREATE DATABASE computer_shop;
 CREATE USER shop_user WITH PASSWORD 'your_password';
+\c computer_shop;
+GRANT ALL ON SCHEMA public TO shop_user;
 GRANT ALL PRIVILEGES ON DATABASE computer_shop TO shop_user;
+ALTER USER shop_user WITH CREATEDB;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO shop_user;
 \q
 
 ### Виконайте міграції
 python manage.py makemigrations
 python manage.py migrate
+
 Крок 6: Завантаження тестових даних
-bash
 python manage.py seed_data
+
 Крок 7: Створення суперкористувача
-bash
 python manage.py createsuperuser
+
 Крок 8: Запуск сервера
-bash
 python manage.py runserver
 Відкрийте в браузері: http://127.0.0.1:8000
 

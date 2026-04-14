@@ -2,523 +2,254 @@
 
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
-from shop.models import Category, Attribute, AttributeValue, Product, ProductAttributeValue
+from django.utils import timezone
+from decimal import Decimal
+from shop.models import (
+    Category, Brand, Promotion, Product, ProductImage,
+    Property, PropertyValue
+)
 
 
 class Command(BaseCommand):
-    help = 'Наповнює базу даних тестовими даними для інтернет-магазину'
-
-    def get_or_create_attribute_value(self, attribute, **kwargs):
-        """Безпечне створення значення атрибута з урахуванням типу"""
-        try:
-            # Спроба знайти існуюче значення
-            if attribute.type == 'number':
-                obj, created = AttributeValue.objects.get_or_create(
-                    attribute=attribute,
-                    value_number=kwargs.get('value_number'),
-                    defaults=kwargs
-                )
-            elif attribute.type == 'boolean':
-                obj, created = AttributeValue.objects.get_or_create(
-                    attribute=attribute,
-                    value_boolean=kwargs.get('value_boolean'),
-                    defaults=kwargs
-                )
-            else:  # text, color
-                obj, created = AttributeValue.objects.get_or_create(
-                    attribute=attribute,
-                    value_text=kwargs.get('value_text'),
-                    defaults=kwargs
-                )
-            return obj, created
-        except Exception as e:
-            self.stdout.write(f'   ! Помилка при створенні {attribute.name}: {e}')
-            return None, False
+    help = 'Наповнює базу даних тестовими даними для нової структури магазину'
 
     def handle(self, *args, **options):
         self.stdout.write('Починаємо наповнення бази даних...')
-        
-        # === 1. СТВОРЮЄМО КАТЕГОРІЇ ===
-        self.stdout.write('1. Створюємо категорії...')
-        
-        # Кореневі категорії
-        notebooks_root, _ = Category.objects.get_or_create(
-            slug='notebooks',
-            defaults={
-                'name': 'Ноутбуки та комп\'ютери',
-                'description': 'Ноутбуки, комп\'ютери, моноблоки'
-            }
-        )
-        
-        peripherals_root, _ = Category.objects.get_or_create(
-            slug='peripherals',
-            defaults={
-                'name': 'Периферія',
-                'description': 'Монітори, мишки, клавіатури, навушники'
-            }
-        )
-        
-        networking_root, _ = Category.objects.get_or_create(
-            slug='networking',
-            defaults={
-                'name': 'Мережеве обладнання',
-                'description': 'Роутери, комутатори, мережеві карти'
-            }
-        )
-        
-        office_root, _ = Category.objects.get_or_create(
-            slug='office',
-            defaults={
-                'name': 'Офісне приладдя',
-                'description': 'Папір, ручки, канцтовари'
-            }
-        )
-        
-        # Підкатегорії для Ноутбуки та комп'ютери
-        laptops, _ = Category.objects.get_or_create(
-            slug='laptops',
-            defaults={
-                'name': 'Ноутбуки',
-                'parent': notebooks_root,
-                'description': 'Всі види ноутбуків'
-            }
-        )
-        
-        gaming_laptops, _ = Category.objects.get_or_create(
-            slug='gaming-laptops',
-            defaults={
-                'name': 'Ігрові ноутбуки',
-                'parent': laptops,
-                'description': 'Потужні ноутбуки для ігор'
-            }
-        )
-        
-        office_laptops, _ = Category.objects.get_or_create(
-            slug='office-laptops',
-            defaults={
-                'name': 'Офісні ноутбуки',
-                'parent': laptops,
-                'description': 'Ноутбуки для роботи та навчання'
-            }
-        )
-        
-        all_in_one, _ = Category.objects.get_or_create(
-            slug='all-in-one',
-            defaults={
-                'name': 'Моноблоки',
-                'parent': notebooks_root,
-                'description': 'Комп\'ютер-все-в-одному'
-            }
-        )
-        
-        pcs, _ = Category.objects.get_or_create(
-            slug='pcs',
-            defaults={
-                'name': 'Системні блоки',
-                'parent': notebooks_root,
-                'description': 'Стаціонарні комп\'ютери'
-            }
-        )
-        
-        # Підкатегорії для Периферія
-        mice, _ = Category.objects.get_or_create(
-            slug='mice',
-            defaults={
-                'name': 'Мишки',
-                'parent': peripherals_root,
-                'description': 'Комп\'ютерні миші'
-            }
-        )
-        
-        keyboards, _ = Category.objects.get_or_create(
-            slug='keyboards',
-            defaults={
-                'name': 'Клавіатури',
-                'parent': peripherals_root,
-                'description': 'Клавіатури'
-            }
-        )
-        
-        monitors, _ = Category.objects.get_or_create(
-            slug='monitors',
-            defaults={
-                'name': 'Монітори',
-                'parent': peripherals_root,
-                'description': 'Монітори та дисплеї'
-            }
-        )
-        
-        headphones, _ = Category.objects.get_or_create(
-            slug='headphones',
-            defaults={
-                'name': 'Навушники',
-                'parent': peripherals_root,
-                'description': 'Навушники та гарнітури'
-            }
-        )
-        
+
+        # ========== 1. Бренди ==========
+        self.stdout.write('1. Створюємо бренди...')
+        brands_data = [
+            {'name': 'ASUS', 'slug': 'asus'},
+            {'name': 'Dell', 'slug': 'dell'},
+            {'name': 'HP', 'slug': 'hp'},
+            {'name': 'Lenovo', 'slug': 'lenovo'},
+            {'name': 'Apple', 'slug': 'apple'},
+            {'name': 'A4Tech', 'slug': 'a4tech'},
+            {'name': 'Logitech', 'slug': 'logitech'},
+        ]
+        brand_objs = {}
+        for data in brands_data:
+            brand, created = Brand.objects.get_or_create(slug=data['slug'], defaults=data)
+            brand_objs[data['slug']] = brand
+            if created:
+                self.stdout.write(f'   ✓ Створено бренд: {brand.name}')
+        self.stdout.write(f'   ✓ Брендів: {Brand.objects.count()}')
+
+        # ========== 2. Акції (Promotions) ==========
+        self.stdout.write('2. Створюємо акції...')
+        now = timezone.now()
+        promotions_data = [
+            {'name': 'Новинка', 'slug': 'new', 'promotion_type': 'new', 'discount_percent': 0,
+             'start_date': now - timezone.timedelta(days=30), 'end_date': now + timezone.timedelta(days=365)},
+            {'name': 'Хіт продажів', 'slug': 'bestseller', 'promotion_type': 'bestseller', 'discount_percent': 0,
+             'start_date': now - timezone.timedelta(days=30), 'end_date': now + timezone.timedelta(days=365)},
+            {'name': 'Розпродаж', 'slug': 'sale', 'promotion_type': 'sale', 'discount_percent': 15,
+             'start_date': now - timezone.timedelta(days=10), 'end_date': now + timezone.timedelta(days=20)},
+            {'name': 'Знижка на мишки', 'slug': 'mouse-discount', 'promotion_type': 'discount', 'discount_percent': 10,
+             'start_date': now - timezone.timedelta(days=5), 'end_date': now + timezone.timedelta(days=15)},
+        ]
+        promo_objs = {}
+        for data in promotions_data:
+            promo, created = Promotion.objects.get_or_create(slug=data['slug'], defaults=data)
+            promo_objs[data['slug']] = promo
+            if created:
+                self.stdout.write(f'   ✓ Створено акцію: {promo.name}')
+        self.stdout.write(f'   ✓ Акцій: {Promotion.objects.count()}')
+
+        # ========== 3. Категорії (MPTT) ==========
+        self.stdout.write('3. Створюємо категорії...')
+        # Кореневі категорії (рівень 0)
+        root_cats = {}
+        root_data = [
+            {'name': 'Ноутбуки та комп\'ютери', 'slug': 'notebooks'},
+            {'name': 'Периферія', 'slug': 'peripherals'},
+            {'name': 'Мережеве обладнання', 'slug': 'networking'},
+            {'name': 'Офісне приладдя', 'slug': 'office'},
+        ]
+        for data in root_data:
+            cat, created = Category.objects.get_or_create(slug=data['slug'], defaults={'name': data['name']})
+            root_cats[data['slug']] = cat
+            if created:
+                self.stdout.write(f'   ✓ Створено категорію: {cat.name}')
+
+        # Підкатегорії
+        subcats_data = [
+            # Ноутбуки та комп'ютери
+            {'name': 'Ноутбуки', 'slug': 'laptops', 'parent_slug': 'notebooks'},
+            {'name': 'Ігрові ноутбуки', 'slug': 'gaming-laptops', 'parent_slug': 'laptops'},
+            {'name': 'Офісні ноутбуки', 'slug': 'office-laptops', 'parent_slug': 'laptops'},
+            {'name': 'Моноблоки', 'slug': 'all-in-one', 'parent_slug': 'notebooks'},
+            {'name': 'Системні блоки', 'slug': 'pcs', 'parent_slug': 'notebooks'},
+            # Периферія
+            {'name': 'Мишки', 'slug': 'mice', 'parent_slug': 'peripherals'},
+            {'name': 'Клавіатури', 'slug': 'keyboards', 'parent_slug': 'peripherals'},
+            {'name': 'Монітори', 'slug': 'monitors', 'parent_slug': 'peripherals'},
+            {'name': 'Навушники', 'slug': 'headphones', 'parent_slug': 'peripherals'},
+        ]
+        for data in subcats_data:
+            parent = root_cats.get(data['parent_slug']) or Category.objects.get(slug=data['parent_slug'])
+            cat, created = Category.objects.get_or_create(
+                slug=data['slug'],
+                defaults={
+                    'name': data['name'],
+                    'parent': parent
+                }
+            )
+            if created:
+                self.stdout.write(f'   ✓ Створено підкатегорію: {cat.name} (батько: {parent.name})')
         self.stdout.write(f'   ✓ Категорій: {Category.objects.count()}')
-        
-        # === 2. СТВОРЮЄМО АТРИБУТИ ===
-        self.stdout.write('2. Створюємо атрибути...')
-        
-        brand, _ = Attribute.objects.get_or_create(
-            slug='brand',
-            defaults={
-                'name': 'Бренд',
-                'type': 'text',
-                'is_filterable': True,
-                'is_visible': True,
-                'sort_order': 1
-            }
-        )
-        
-        color, _ = Attribute.objects.get_or_create(
-            slug='color',
-            defaults={
-                'name': 'Колір',
-                'type': 'color',
-                'is_filterable': True,
-                'is_visible': True,
-                'sort_order': 2
-            }
-        )
-        
-        material, _ = Attribute.objects.get_or_create(
-            slug='material',
-            defaults={
-                'name': 'Матеріал',
-                'type': 'text',
-                'is_filterable': True,
-                'is_visible': True,
-                'sort_order': 3
-            }
-        )
-        
-        ram, _ = Attribute.objects.get_or_create(
-            slug='ram',
-            defaults={
-                'name': 'Оперативна пам\'ять',
-                'type': 'number',
-                'unit': 'GB',
-                'is_filterable': True,
-                'is_visible': True,
-                'sort_order': 4
-            }
-        )
-        
-        storage, _ = Attribute.objects.get_or_create(
-            slug='storage',
-            defaults={
-                'name': 'Накопичувач',
-                'type': 'text',
-                'is_filterable': True,
-                'is_visible': True,
-                'sort_order': 5
-            }
-        )
-        
-        cpu, _ = Attribute.objects.get_or_create(
-            slug='cpu',
-            defaults={
-                'name': 'Процесор',
-                'type': 'text',
-                'is_filterable': True,
-                'is_visible': True,
-                'sort_order': 6
-            }
-        )
-        
-        screen_size, _ = Attribute.objects.get_or_create(
-            slug='screen-size',
-            defaults={
-                'name': 'Діагональ екрану',
-                'type': 'number',
-                'unit': '"',
-                'is_filterable': True,
-                'is_visible': True,
-                'sort_order': 7
-            }
-        )
-        
-        warranty, _ = Attribute.objects.get_or_create(
-            slug='warranty',
-            defaults={
-                'name': 'Гарантія',
-                'type': 'text',
-                'unit': 'місяців',
-                'is_filterable': True,
-                'is_visible': True,
-                'sort_order': 8
-            }
-        )
-        
-        country, _ = Attribute.objects.get_or_create(
-            slug='country',
-            defaults={
-                'name': 'Країна виробник',
-                'type': 'text',
-                'is_filterable': True,
-                'is_visible': True,
-                'sort_order': 9
-            }
-        )
-        
-        connection, _ = Attribute.objects.get_or_create(
-            slug='connection',
-            defaults={
-                'name': 'Тип підключення',
-                'type': 'text',
-                'is_filterable': True,
-                'is_visible': True,
-                'sort_order': 10
-            }
-        )
-        
-        self.stdout.write(f'   ✓ Атрибутів: {Attribute.objects.count()}')
-        
-        # === 3. СТВОРЮЄМО ЗНАЧЕННЯ АТРИБУТІВ ===
-        self.stdout.write('3. Створюємо значення атрибутів...')
-        
-        # Бренди
-        brand_asus, _ = self.get_or_create_attribute_value(brand, value_text='ASUS')
-        brand_dell, _ = self.get_or_create_attribute_value(brand, value_text='Dell')
-        brand_hp, _ = self.get_or_create_attribute_value(brand, value_text='HP')
-        brand_lenovo, _ = self.get_or_create_attribute_value(brand, value_text='Lenovo')
-        brand_apple, _ = self.get_or_create_attribute_value(brand, value_text='Apple')
-        brand_a4tech, _ = self.get_or_create_attribute_value(brand, value_text='A4Tech')
-        brand_logitech, _ = self.get_or_create_attribute_value(brand, value_text='Logitech')
-        
-        # Кольори
-        color_black, _ = self.get_or_create_attribute_value(color, value_text='Чорний', value_color='#000000')
-        color_white, _ = self.get_or_create_attribute_value(color, value_text='Білий', value_color='#FFFFFF')
-        color_gray, _ = self.get_or_create_attribute_value(color, value_text='Сірий', value_color='#808080')
-        color_silver, _ = self.get_or_create_attribute_value(color, value_text='Сріблястий', value_color='#C0C0C0')
-        
-        # Матеріали
-        material_plastic, _ = self.get_or_create_attribute_value(material, value_text='Пластик')
-        material_aluminum, _ = self.get_or_create_attribute_value(material, value_text='Алюміній')
-        
-        # RAM (числові значення)
-        ram_8gb, _ = self.get_or_create_attribute_value(ram, value_number=8)
-        ram_16gb, _ = self.get_or_create_attribute_value(ram, value_number=16)
-        ram_32gb, _ = self.get_or_create_attribute_value(ram, value_number=32)
-        
-        # Накопичувачі
-        storage_256, _ = self.get_or_create_attribute_value(storage, value_text='256GB SSD')
-        storage_512, _ = self.get_or_create_attribute_value(storage, value_text='512GB SSD')
-        storage_1tb, _ = self.get_or_create_attribute_value(storage, value_text='1TB SSD')
-        
-        # Процесори
-        cpu_i5, _ = self.get_or_create_attribute_value(cpu, value_text='Intel Core i5')
-        cpu_i7, _ = self.get_or_create_attribute_value(cpu, value_text='Intel Core i7')
-        cpu_ryzen5, _ = self.get_or_create_attribute_value(cpu, value_text='AMD Ryzen 5')
-        
-        # Діагоналі (числові значення)
-        screen_14, _ = self.get_or_create_attribute_value(screen_size, value_number=14)
-        screen_156, _ = self.get_or_create_attribute_value(screen_size, value_number=15.6)
-        screen_27, _ = self.get_or_create_attribute_value(screen_size, value_number=27)
-        
-        # Гарантії
-        warranty_12, _ = self.get_or_create_attribute_value(warranty, value_text='12')
-        warranty_24, _ = self.get_or_create_attribute_value(warranty, value_text='24')
-        
-        # Країни
-        country_china, _ = self.get_or_create_attribute_value(country, value_text='Китай')
-        country_taiwan, _ = self.get_or_create_attribute_value(country, value_text='Тайвань')
-        
-        # Типи підключення
-        connection_usb, _ = self.get_or_create_attribute_value(connection, value_text='USB')
-        connection_wireless, _ = self.get_or_create_attribute_value(connection, value_text='Бездротовий')
-        connection_bluetooth, _ = self.get_or_create_attribute_value(connection, value_text='Bluetooth')
-        
-        self.stdout.write(f'   ✓ Значень атрибутів: {AttributeValue.objects.count()}')
-        
-        # === 4. СТВОРЮЄМО ТОВАРИ ===
-        self.stdout.write('4. Створюємо товари...')
-        
-        # Товар 1: Ноутбук ASUS VivoBook
-        product1, _ = Product.objects.get_or_create(
-            slug='asus-vivobook-15',
-            defaults={
-                'name': 'Ноутбук ASUS VivoBook 15',
-                'category': office_laptops,
-                'description': 'Потужний ноутбук для роботи та навчання. Intel Core i5, 16GB RAM, 512GB SSD.',
-                'price': 18999,
-                'old_price': 15999,
-                'stock': 25,
-                'is_active': True,
-                'is_new': True,
-                'meta_title': 'ASUS VivoBook 15 купити в Україні',
-                'meta_description': 'Ноутбук ASUS VivoBook 15 за найкращою ціною. Характеристики, відгуки, доставка.'
-            }
-        )
-        
-        if brand_asus:
-            ProductAttributeValue.objects.get_or_create(product=product1, attribute_value=brand_asus)
-        if color_silver:
-            ProductAttributeValue.objects.get_or_create(product=product1, attribute_value=color_silver)
-        if ram_16gb:
-            ProductAttributeValue.objects.get_or_create(product=product1, attribute_value=ram_16gb)
-        if storage_512:
-            ProductAttributeValue.objects.get_or_create(product=product1, attribute_value=storage_512)
-        if cpu_i5:
-            ProductAttributeValue.objects.get_or_create(product=product1, attribute_value=cpu_i5)
-        if warranty_24:
-            ProductAttributeValue.objects.get_or_create(product=product1, attribute_value=warranty_24)
-        if country_china:
-            ProductAttributeValue.objects.get_or_create(product=product1, attribute_value=country_china)
-        
-        # Товар 2: Ноутбук Dell XPS
-        product2, _ = Product.objects.get_or_create(
-            slug='dell-xps-13',
-            defaults={
-                'name': 'Ноутбук Dell XPS 13',
-                'category': laptops,
-                'description': 'Преміальний ультрабук з безрамковим дисплеєм.',
-                'price': 45999,
-                'stock': 10,
-                'is_active': True,
-                'is_bestseller': True,
-                'meta_title': 'Dell XPS 13 - преміальний ноутбук'
-            }
-        )
-        
-        if brand_dell:
-            ProductAttributeValue.objects.get_or_create(product=product2, attribute_value=brand_dell)
-        if color_silver:
-            ProductAttributeValue.objects.get_or_create(product=product2, attribute_value=color_silver)
-        if ram_16gb:
-            ProductAttributeValue.objects.get_or_create(product=product2, attribute_value=ram_16gb)
-        if storage_512:
-            ProductAttributeValue.objects.get_or_create(product=product2, attribute_value=storage_512)
-        if cpu_i7:
-            ProductAttributeValue.objects.get_or_create(product=product2, attribute_value=cpu_i7)
-        if screen_14:
-            ProductAttributeValue.objects.get_or_create(product=product2, attribute_value=screen_14)
-        
-        # Товар 3: Ігровий ноутбук
-        product3, _ = Product.objects.get_or_create(
-            slug='asus-rog-strix',
-            defaults={
-                'name': 'Ігровий ноутбук ASUS ROG Strix',
-                'category': gaming_laptops,
-                'description': 'Потужний ігровий ноутбук з RGB підсвіткою.',
-                'price': 52999,
-                'old_price': 49999,
-                'stock': 5,
-                'is_active': True,
-                'is_new': True,
-            }
-        )
-        
-        if brand_asus:
-            ProductAttributeValue.objects.get_or_create(product=product3, attribute_value=brand_asus)
-        if color_black:
-            ProductAttributeValue.objects.get_or_create(product=product3, attribute_value=color_black)
-        if ram_32gb:
-            ProductAttributeValue.objects.get_or_create(product=product3, attribute_value=ram_32gb)
-        if storage_1tb:
-            ProductAttributeValue.objects.get_or_create(product=product3, attribute_value=storage_1tb)
-        if cpu_i7:
-            ProductAttributeValue.objects.get_or_create(product=product3, attribute_value=cpu_i7)
-        
-        # Товар 4: Мишка A4Tech
-        product4, _ = Product.objects.get_or_create(
-            slug='a4tech-bloody-v7m',
-            defaults={
-                'name': 'Мишка A4Tech Bloody V7M',
-                'category': mice,
+
+        # ========== 4. Властивості (характеристики) ==========
+        self.stdout.write('4. Створюємо властивості...')
+        properties_data = [
+            {'name': 'Бренд', 'slug': 'brand'},
+            {'name': 'Колір', 'slug': 'color'},
+            {'name': 'Оперативна пам\'ять (GB)', 'slug': 'ram'},
+            {'name': 'Накопичувач', 'slug': 'storage'},
+            {'name': 'Процесор', 'slug': 'cpu'},
+            {'name': 'Діагональ екрану (")', 'slug': 'screen-size'},
+        ]
+        prop_objs = {}
+        for data in properties_data:
+            prop, created = Property.objects.get_or_create(slug=data['slug'], defaults={'name': data['name']})
+            prop_objs[data['slug']] = prop
+            if created:
+                self.stdout.write(f'   ✓ Створено властивість: {prop.name}')
+
+        # Значення властивостей
+        self.stdout.write('   Додаємо значення властивостей...')
+        prop_values_data = [
+            ('brand', 'ASUS'), ('brand', 'Dell'), ('brand', 'Logitech'), ('brand', 'A4Tech'),
+            ('color', 'Чорний'), ('color', 'Білий'), ('color', 'Сірий'),
+            ('ram', '8'), ('ram', '16'), ('ram', '32'),
+            ('storage', '256GB SSD'), ('storage', '512GB SSD'), ('storage', '1TB SSD'),
+            ('cpu', 'Intel Core i5'), ('cpu', 'Intel Core i7'), ('cpu', 'AMD Ryzen 5'),
+            ('screen-size', '13.3'), ('screen-size', '15.6'), ('screen-size', '27'),
+        ]
+        for slug, value in prop_values_data:
+            prop = prop_objs.get(slug)
+            if prop:
+                pv, created = PropertyValue.objects.get_or_create(property=prop, value=value)
+                if created:
+                    self.stdout.write(f'      - {prop.name}: {value}')
+        self.stdout.write(f'   ✓ Значень властивостей: {PropertyValue.objects.count()}')
+
+        # ========== 5. Товари ==========
+        self.stdout.write('5. Створюємо товари...')
+        products_data = [
+            {
+                'title': 'Ноутбук ASUS VivoBook 15',
+                'slug': 'asus-vivobook-15',
+                'category_slug': 'office-laptops',
+                'brand_slug': 'asus',
+                'price': Decimal('18999'),
+                'old_price': Decimal('15999'),
+                'quantity': 25,
+                'available': True,
+                'description': 'Потужний ноутбук для роботи та навчання.',
+                'full_description': 'Intel Core i5, 16GB RAM, 512GB SSD, Windows 11.',
+                'promotions': ['new'],
+                'main_image': 'products/asus_vivobook_15.jpg',  # Файл має бути в media/
+                'additional_images': ['products/asus_vivobook_15_2.jpg', 'products/asus_vivobook_15_3.jpg'],
+                'property_values': [('brand', 'ASUS'), ('ram', '16'), ('storage', '512GB SSD'), ('cpu', 'Intel Core i5')]
+            },
+            {
+                'title': 'Мишка A4Tech Bloody V7M',
+                'slug': 'a4tech-bloody-v7m',
+                'category_slug': 'mice',
+                'brand_slug': 'a4tech',
+                'price': Decimal('899'),
+                'quantity': 50,
+                'available': True,
                 'description': 'Ігрова мишка з підсвіткою та додатковими кнопками.',
-                'price': 899,
-                'stock': 50,
-                'is_active': True,
-                'is_bestseller': True,
-            }
-        )
-        
-        if brand_a4tech:
-            ProductAttributeValue.objects.get_or_create(product=product4, attribute_value=brand_a4tech)
-        if color_black:
-            ProductAttributeValue.objects.get_or_create(product=product4, attribute_value=color_black)
-        if material_plastic:
-            ProductAttributeValue.objects.get_or_create(product=product4, attribute_value=material_plastic)
-        if connection_usb:
-            ProductAttributeValue.objects.get_or_create(product=product4, attribute_value=connection_usb)
-        if warranty_12:
-            ProductAttributeValue.objects.get_or_create(product=product4, attribute_value=warranty_12)
-        if country_china:
-            ProductAttributeValue.objects.get_or_create(product=product4, attribute_value=country_china)
-        
-        # Товар 5: Мишка Logitech
-        product5, _ = Product.objects.get_or_create(
-            slug='logitech-mx-master-3',
-            defaults={
-                'name': 'Мишка Logitech MX Master 3',
-                'category': mice,
+                'promotions': ['bestseller'],
+                'main_image': 'products/a4tech_bloody_v7m.jpg',
+                'property_values': [('brand', 'A4Tech'), ('color', 'Чорний')]
+            },
+            {
+                'title': 'Мишка Logitech MX Master 3',
+                'slug': 'logitech-mx-master-3',
+                'category_slug': 'mice',
+                'brand_slug': 'logitech',
+                'price': Decimal('3999'),
+                'old_price': Decimal('3499'),
+                'quantity': 30,
+                'available': True,
                 'description': 'Бездротова мишка для професіоналів.',
-                'price': 3999,
-                'old_price': 3499,
-                'stock': 30,
-                'is_active': True,
-                'is_new': True,
-            }
-        )
-        
-        if brand_logitech:
-            ProductAttributeValue.objects.get_or_create(product=product5, attribute_value=brand_logitech)
-        if color_gray:
-            ProductAttributeValue.objects.get_or_create(product=product5, attribute_value=color_gray)
-        if material_aluminum:
-            ProductAttributeValue.objects.get_or_create(product=product5, attribute_value=material_aluminum)
-        if connection_bluetooth:
-            ProductAttributeValue.objects.get_or_create(product=product5, attribute_value=connection_bluetooth)
-        if warranty_24:
-            ProductAttributeValue.objects.get_or_create(product=product5, attribute_value=warranty_24)
-        
-        # Товар 6: Монітор Dell
-        product6, _ = Product.objects.get_or_create(
-            slug='dell-s2721h',
-            defaults={
-                'name': 'Монітор Dell 27" S2721H',
-                'category': monitors,
+                'promotions': ['new'],
+                'main_image': 'products/logitech_mx_master_3.jpg',
+                'property_values': [('brand', 'Logitech'), ('color', 'Сірий')]
+            },
+            {
+                'title': 'Монітор Dell 27" S2721H',
+                'slug': 'dell-s2721h',
+                'category_slug': 'monitors',
+                'brand_slug': 'dell',
+                'price': Decimal('8999'),
+                'quantity': 15,
+                'available': True,
                 'description': '27-дюймовий IPS монітор для роботи та розваг.',
-                'price': 8999,
-                'stock': 15,
-                'is_active': True,
-            }
-        )
-        
-        if brand_dell:
-            ProductAttributeValue.objects.get_or_create(product=product6, attribute_value=brand_dell)
-        if color_black:
-            ProductAttributeValue.objects.get_or_create(product=product6, attribute_value=color_black)
-        if screen_27:
-            ProductAttributeValue.objects.get_or_create(product=product6, attribute_value=screen_27)
-        
-        # Товар 7: Клавіатура
-        product7, _ = Product.objects.get_or_create(
-            slug='logitech-k380',
-            defaults={
-                'name': 'Клавіатура Logitech K380',
-                'category': keyboards,
-                'description': 'Компактна бездротова клавіатура.',
-                'price': 1299,
-                'stock': 40,
-                'is_active': True,
-            }
-        )
-        
-        if brand_logitech:
-            ProductAttributeValue.objects.get_or_create(product=product7, attribute_value=brand_logitech)
-        if color_white:
-            ProductAttributeValue.objects.get_or_create(product=product7, attribute_value=color_white)
-        if connection_bluetooth:
-            ProductAttributeValue.objects.get_or_create(product=product7, attribute_value=connection_bluetooth)
-        
+                'promotions': [],
+                'main_image': 'products/dell_s2721h.jpg',
+                'property_values': [('brand', 'Dell'), ('screen-size', '27'), ('color', 'Чорний')]
+            },
+        ]
+
+        for data in products_data:
+            # Отримуємо категорію та бренд
+            category = Category.objects.get(slug=data['category_slug'])
+            brand = Brand.objects.get(slug=data['brand_slug'])
+            # Створюємо або оновлюємо товар
+            product, created = Product.objects.get_or_create(
+                slug=data['slug'],
+                defaults={
+                    'title': data['title'],
+                    'category': category,
+                    'brand': brand,
+                    'price': data['price'],
+                    'old_price': data.get('old_price'),
+                    'quantity': data['quantity'],
+                    'available': data['available'],
+                    'description': data['description'],
+                    'full_description': data.get('full_description', ''),
+                }
+            )
+            if created:
+                self.stdout.write(f'   ✓ Створено товар: {product.title}')
+            else:
+                self.stdout.write(f'   ! Товар вже існує: {product.title}')
+
+            # Додаємо акції
+            for promo_slug in data.get('promotions', []):
+                promo = promo_objs.get(promo_slug)
+                if promo:
+                    product.promotions.add(promo)
+
+            # Додаємо значення властивостей
+            for prop_slug, value in data.get('property_values', []):
+                try:
+                    prop = prop_objs[prop_slug]
+                    prop_value = PropertyValue.objects.get(property=prop, value=value)
+                    product.property_values.add(prop_value)
+                except (KeyError, PropertyValue.DoesNotExist):
+                    pass
+
+            # Додаємо зображення (якщо є файли, потрібно їх фізично завантажити)
+            # Тут ми просто створюємо записи ProductImage, але файли мають існувати в media/products/
+            if data.get('main_image'):
+                product.main_image = data['main_image']
+                product.save(update_fields=['main_image'])
+
+            for idx, img_path in enumerate(data.get('additional_images', [])):
+                ProductImage.objects.get_or_create(
+                    product=product,
+                    order=idx,
+                    defaults={'image': img_path, 'alt_text': f'{product.title} фото {idx+1}'}
+                )
+
         self.stdout.write(f'   ✓ Товарів: {Product.objects.count()}')
-        
-        # === 5. СТВОРЮЄМО СУПЕРКОРИСТУВАЧА ===
+
+        # ========== 6. Суперкористувач ==========
         if not User.objects.filter(username='admin').exists():
             User.objects.create_superuser(
                 username='admin',
@@ -528,5 +259,5 @@ class Command(BaseCommand):
             self.stdout.write('   ✓ Створено суперкористувача (логін: admin, пароль: admin123)')
         else:
             self.stdout.write('   ✓ Суперкористувач вже існує')
-        
+
         self.stdout.write(self.style.SUCCESS('✅ Базу даних успішно наповнено тестовими даними!'))

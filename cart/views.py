@@ -10,10 +10,10 @@ from .cart import Cart
 @require_POST
 def cart_add(request, product_id):
     cart = Cart(request)
-    product = get_object_or_404(Product, id=product_id, is_active=True)
+    product = get_object_or_404(Product, id=product_id, available=True)
     quantity = int(request.POST.get('quantity', 1))
     cart.add(product=product, quantity=quantity, override_quantity=False)
-    messages.success(request, f'{product.name} додано до кошика')
+    messages.success(request, f'{product.title} додано до кошика')
     return redirect('cart:cart_detail')
 
 
@@ -27,7 +27,8 @@ def cart_remove(request, product_id):
 
 
 def cart_detail(request):
-    return render(request, 'cart/detail.html')
+    cart = Cart(request)
+    return render(request, 'cart/detail.html', {'cart': cart})
 
 
 @require_POST
@@ -35,35 +36,30 @@ def cart_update(request, product_id):
     cart = Cart(request)
     product = get_object_or_404(Product, id=product_id)
     quantity = int(request.POST.get('quantity', 1))
-    
     if quantity > 0:
         cart.add(product=product, quantity=quantity, override_quantity=True)
     else:
         cart.remove(product)
-    
+    messages.success(request, 'Кошик оновлено')
     return redirect('cart:cart_detail')
 
 
 def checkout(request):
-    """Сторінка оформлення замовлення"""
     cart = Cart(request)
-    
     if len(cart) == 0:
         messages.warning(request, 'Ваш кошик порожній')
         return redirect('cart:cart_detail')
-    
+
     if request.method == 'POST':
-        # Отримуємо дані з форми
-        full_name = request.POST.get('full_name')
-        phone = request.POST.get('phone')
-        email = request.POST.get('email')
-        delivery_method = request.POST.get('delivery_method')
-        city = request.POST.get('city')
-        nova_post_office = request.POST.get('nova_post_office')
-        address = request.POST.get('address')
-        comment = request.POST.get('comment', '')
-        
-        # Валідація
+        full_name = request.POST.get('full_name', '').strip()
+        phone = request.POST.get('phone', '').strip()
+        email = request.POST.get('email', '').strip()
+        delivery_method = request.POST.get('delivery_method', 'nova_post')
+        city = request.POST.get('city', '').strip()
+        nova_post_office = request.POST.get('nova_post_office', '').strip()
+        address = request.POST.get('address', '').strip()
+        comment = request.POST.get('comment', '').strip()
+
         errors = []
         if not full_name:
             errors.append('Вкажіть ПІБ')
@@ -73,24 +69,22 @@ def checkout(request):
             errors.append('Вкажіть email')
         if delivery_method == 'nova_post' and not nova_post_office:
             errors.append('Вкажіть відділення Нової Пошти')
-        
+
         if errors:
             for error in errors:
                 messages.error(request, error)
             return render(request, 'cart/checkout.html', {'cart': cart})
-        
-        # Формуємо список товарів для збереження
+
         products_list = []
         for item in cart:
             products_list.append({
                 'id': item['product'].id,
-                'name': item['product'].name,
+                'name': item['product'].title,
                 'price': str(item['price']),
                 'quantity': item['quantity'],
-                'image': item['product'].image.url if item['product'].image else None,
+                'image': item['product'].main_image.url if item['product'].main_image else None,
             })
-        
-        # Створюємо замовлення
+
         order = Order.objects.create(
             full_name=full_name,
             phone=phone,
@@ -105,13 +99,9 @@ def checkout(request):
             status='new',
             is_paid=False,
         )
-        
-        # Очищаємо кошик
+
         cart.clear()
-        
         messages.success(request, f'Замовлення #{order.id} створено!')
-        
-        # Перенаправляємо на сторінку оплати
         return redirect('payment:process', order_id=order.id)
-    
+
     return render(request, 'cart/checkout.html', {'cart': cart})

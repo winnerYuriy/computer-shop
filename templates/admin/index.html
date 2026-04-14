@@ -1,54 +1,69 @@
-<!-- templates/admin/index.html -->
 {% extends "admin/index.html" %}
 {% load static %}
 
+{% block extrahead %}
+{{ block.super }}
+<style>
+    .dashboard-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    .stat-card {
+        background: white;
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        transition: transform 0.2s, box-shadow 0.2s;
+        border: 1px solid #eef2f6;
+    }
+    body.dark-mode .stat-card {
+        background: #1e293b;
+        border-color: #334155;
+        color: #e2e8f0;
+    }
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+    }
+    .stat-icon { font-size: 32px; color: #3b82f6; margin-bottom: 12px; }
+    .stat-value { font-size: 28px; font-weight: 700; color: #1e293b; margin-bottom: 4px; }
+    body.dark-mode .stat-value { color: #f8fafc; }
+    .stat-label { color: #64748b; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat-change { font-size: 13px; margin-top: 8px; color: #10b981; }
+    .recent-orders {
+        background: white;
+        border-radius: 16px;
+        padding: 20px;
+        border: 1px solid #eef2f6;
+        margin-top: 20px;
+    }
+    body.dark-mode .recent-orders {
+        background: #1e293b;
+        border-color: #334155;
+    }
+    .recent-orders h3 { font-size: 18px; margin-bottom: 15px; }
+    .recent-orders table { width: 100%; }
+    .recent-orders th, .recent-orders td { padding: 10px 0; border-bottom: 1px solid #eef2f6; }
+    body.dark-mode .recent-orders th, body.dark-mode .recent-orders td { border-bottom-color: #334155; }
+</style>
+{% endblock %}
+
 {% block content %}
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 30px;">
-    <div style="background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; padding: 20px; border-radius: 16px;">
-        <i class="fas fa-shopping-cart" style="font-size: 32px; margin-bottom: 10px; display: inline-block;"></i>
-        <h3 style="margin: 0; font-size: 28px;">{{ total_orders|default:"0" }}</h3>
-        <p style="margin: 5px 0 0; opacity: 0.9;">Всього замовлень</p>
+<div id="content-main">
+    <div class="dashboard-stats">
+        <div class="stat-card"><div class="stat-icon"><i class="fas fa-shopping-cart"></i></div><div class="stat-value">{{ total_orders|default:"0" }}</div><div class="stat-label">Всього замовлень</div><div class="stat-change">+{{ orders_growth|default:"0" }}% за місяць</div></div>
+        <div class="stat-card"><div class="stat-icon"><i class="fas fa-dollar-sign"></i></div><div class="stat-value">{{ total_revenue|default:"0" }}₴</div><div class="stat-label">Загальний дохід</div></div>
+        <div class="stat-card"><div class="stat-icon"><i class="fas fa-users"></i></div><div class="stat-value">{{ total_customers|default:"0" }}</div><div class="stat-label">Клієнтів</div></div>
+        <div class="stat-card"><div class="stat-icon"><i class="fas fa-box"></i></div><div class="stat-value">{{ total_products|default:"0" }}</div><div class="stat-label">Активних товарів</div></div>
     </div>
-    <div style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 20px; border-radius: 16px;">
-        <i class="fas fa-dollar-sign" style="font-size: 32px; margin-bottom: 10px; display: inline-block;"></i>
-        <h3 style="margin: 0; font-size: 28px;">{{ total_revenue|default:"0" }}₴</h3>
-        <p style="margin: 5px 0 0; opacity: 0.9;">Загальний дохід</p>
-    </div>
-    <div style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 20px; border-radius: 16px;">
-        <i class="fas fa-users" style="font-size: 32px; margin-bottom: 10px; display: inline-block;"></i>
-        <h3 style="margin: 0; font-size: 28px;">{{ total_customers|default:"0" }}</h3>
-        <p style="margin: 5px 0 0; opacity: 0.9;">Клієнтів</p>
-    </div>
-    <div style="background: linear-gradient(135deg, #ef4444, #dc2626); color: white; padding: 20px; border-radius: 16px;">
-        <i class="fas fa-box" style="font-size: 32px; margin-bottom: 10px; display: inline-block;"></i>
-        <h3 style="margin: 0; font-size: 28px;">{{ total_products|default:"0" }}</h3>
-        <p style="margin: 5px 0 0; opacity: 0.9;">Товарів</p>
+    <div class="recent-orders">
+        <h3>Останні замовлення</h3>
+        <table><thead><tr><th>ID</th><th>Клієнт</th><th>Сума</th><th>Статус</th><th>Дата</th></tr></thead>
+        <tbody>{% for order in recent_orders %}<tr><td><a href="{% url 'admin:shop_order_change' order.id %}">#{{ order.id }}</a></td><td>{{ order.full_name }}</td><td>{{ order.total_amount }}₴</td><td>{{ order.get_status_display }}</td><td>{{ order.created_at|date:"d.m.Y H:i" }}</td></tr>{% empty %}<tr><td colspan="5">Немає замовлень</td></tr>{% endfor %}</tbody>
+        </table>
     </div>
 </div>
-
 {{ block.super }}
-
-<script>
-    // Додаємо іконки до пунктів меню
-    document.addEventListener('DOMContentLoaded', function() {
-        const menuItems = {
-            'Products': 'fas fa-box',
-            'Categories': 'fas fa-folder',
-            'Orders': 'fas fa-truck',
-            'Users': 'fas fa-user',
-            'Reviews': 'fas fa-star',
-            'Attributes': 'fas fa-tags'
-        };
-        
-        document.querySelectorAll('#content-main .module caption').forEach(caption => {
-            const text = caption.innerText;
-            for (const [key, icon] of Object.entries(menuItems)) {
-                if (text.includes(key)) {
-                    caption.innerHTML = `<i class="${icon}" style="margin-right: 8px;"></i> ${text}`;
-                    break;
-                }
-            }
-        });
-    });
-</script>
 {% endblock %}
