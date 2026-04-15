@@ -3,6 +3,7 @@
 
 {% block extrahead %}
 {{ block.super }}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
     .dashboard-stats {
         display: grid;
@@ -47,21 +48,149 @@
     .recent-orders table { width: 100%; }
     .recent-orders th, .recent-orders td { padding: 10px 0; border-bottom: 1px solid #eef2f6; }
     body.dark-mode .recent-orders th, body.dark-mode .recent-orders td { border-bottom-color: #334155; }
+    
+    /* Стилі для блоку імпорту/експорту */
+    .import-export-module {
+        background: white;
+        border-radius: 16px;
+        padding: 20px;
+        border: 1px solid #eef2f6;
+        margin-bottom: 30px;
+    }
+    body.dark-mode .import-export-module {
+        background: #1e293b;
+        border-color: #334155;
+    }
+    .import-export-module h3 {
+        font-size: 18px;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .import-export-links {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+    .import-export-links a {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        background: #f8fafc;
+        border-radius: 10px;
+        text-decoration: none;
+        color: #1e293b;
+        transition: all 0.2s;
+        border: 1px solid #e2e8f0;
+    }
+    body.dark-mode .import-export-links a {
+        background: #334155;
+        color: #e2e8f0;
+        border-color: #475569;
+    }
+    .import-export-links a:hover {
+        background: #3b82f6;
+        color: white;
+        transform: translateY(-2px);
+    }
+    .import-export-links i {
+        font-size: 16px;
+    }
+    
+    /* Додаткові стилі */
+    .badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    .badge-new { background: #10b981; color: white; }
+    .badge-processing { background: #f59e0b; color: white; }
+    .badge-paid { background: #3b82f6; color: white; }
+    .badge-shipped { background: #8b5cf6; color: white; }
+    .badge-delivered { background: #06b6d4; color: white; }
+    .badge-cancelled { background: #ef4444; color: white; }
 </style>
 {% endblock %}
 
 {% block content %}
 <div id="content-main">
+    <!-- Блок статистики -->
     <div class="dashboard-stats">
-        <div class="stat-card"><div class="stat-icon"><i class="fas fa-shopping-cart"></i></div><div class="stat-value">{{ total_orders|default:"0" }}</div><div class="stat-label">Всього замовлень</div><div class="stat-change">+{{ orders_growth|default:"0" }}% за місяць</div></div>
-        <div class="stat-card"><div class="stat-icon"><i class="fas fa-dollar-sign"></i></div><div class="stat-value">{{ total_revenue|default:"0" }}₴</div><div class="stat-label">Загальний дохід</div></div>
-        <div class="stat-card"><div class="stat-icon"><i class="fas fa-users"></i></div><div class="stat-value">{{ total_customers|default:"0" }}</div><div class="stat-label">Клієнтів</div></div>
-        <div class="stat-card"><div class="stat-icon"><i class="fas fa-box"></i></div><div class="stat-value">{{ total_products|default:"0" }}</div><div class="stat-label">Активних товарів</div></div>
+        <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-shopping-cart"></i></div>
+            <div class="stat-value">{{ total_orders|default:"0" }}</div>
+            <div class="stat-label">Всього замовлень</div>
+            <div class="stat-change">+{{ orders_growth|default:"0" }}% за місяць</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-dollar-sign"></i></div>
+            <div class="stat-value">{{ total_revenue|default:"0" }}₴</div>
+            <div class="stat-label">Загальний дохід</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-users"></i></div>
+            <div class="stat-value">{{ total_customers|default:"0" }}</div>
+            <div class="stat-label">Клієнтів</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-box"></i></div>
+            <div class="stat-value">{{ total_products|default:"0" }}</div>
+            <div class="stat-label">Активних товарів</div>
+        </div>
     </div>
+
+    <!-- Блок імпорту/експорту -->
+    <div class="import-export-module">
+        <h3><i class="fas fa-exchange-alt"></i> Імпорт / Експорт</h3>
+        <div class="import-export-links">
+            <a href="/admin-config/import-products/">
+                <i class="fas fa-upload"></i> Імпорт товарів з Excel
+            </a>
+            <a href="/admin-config/export-products/">
+                <i class="fas fa-download"></i> Експорт товарів
+            </a>
+            <a href="/admin-config/export-template/">
+                <i class="fas fa-file-excel"></i> Завантажити шаблон
+            </a>
+        </div>
+    </div>
+
+    <!-- Останні замовлення -->
     <div class="recent-orders">
-        <h3>Останні замовлення</h3>
-        <table><thead><tr><th>ID</th><th>Клієнт</th><th>Сума</th><th>Статус</th><th>Дата</th></tr></thead>
-        <tbody>{% for order in recent_orders %}<tr><td><a href="{% url 'admin:shop_order_change' order.id %}">#{{ order.id }}</a></td><td>{{ order.full_name }}</td><td>{{ order.total_amount }}₴</td><td>{{ order.get_status_display }}</td><td>{{ order.created_at|date:"d.m.Y H:i" }}</td></tr>{% empty %}<tr><td colspan="5">Немає замовлень</td></tr>{% endfor %}</tbody>
+        <h3><i class="fas fa-clock"></i> Останні замовлення</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Клієнт</th>
+                    <th>Сума</th>
+                    <th>Статус</th>
+                    <th>Дата</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in recent_orders %}
+                <tr>
+                    <td><a href="/admin/shop/order/{{ order.id }}/change/">#{{ order.id }}</a></td>
+                    <td>{{ order.full_name }}</td>
+                    <td>{{ order.total_amount }}₴</a></td>
+                    <td>
+                        <span class="badge badge-{{ order.status }}">
+                            {{ order.get_status_display }}
+                        </span>
+                    </td>
+                    <td>{{ order.created_at|date:"d.m.Y H:i" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5">Немає замовлень</td>
+                </tr>
+                {% endfor %}
+            </tbody>
         </table>
     </div>
 </div>

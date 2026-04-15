@@ -36,13 +36,17 @@
             </form>
         </div>
         <div class="sidebar-card">
-            <h5 class="sidebar-title">Категорії</h5>
-            <ul class="category-list">
-                {% for category in categories %}
-                <li><a href="{% url 'shop:category_detail' category.slug %}">{{ category.name }}</a></li>
-                {% endfor %}
-            </ul>
-        </div>
+    <h5 class="sidebar-title">Категорії</h5>
+    <ul class="category-list">
+        {% for category in categories %}
+        <li>
+            <a href="{% url 'shop:category_detail' category.slug %}">
+                {{ category.name }}
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
     </div>
 
     <div class="col-md-9">
@@ -101,8 +105,50 @@
         </div>
 
         {% if is_paginated %}
-        <nav class="mt-4"><ul class="pagination justify-content-center">...</ul></nav>
+<nav class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page=1{% if search_query %}&q={{ search_query }}{% endif %}{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if selected_brand %}&brand={{ selected_brand }}{% endif %}{% if current_sort and current_sort != '-created_at' %}&sort={{ current_sort }}{% endif %}">
+                &laquo; Перша
+            </a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if selected_brand %}&brand={{ selected_brand }}{% endif %}{% if current_sort and current_sort != '-created_at' %}&sort={{ current_sort }}{% endif %}">
+                &lsaquo; Попередня
+            </a>
+        </li>
         {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+                <li class="page-item active">
+                    <span class="page-link">{{ num }}</span>
+                </li>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if selected_brand %}&brand={{ selected_brand }}{% endif %}{% if current_sort and current_sort != '-created_at' %}&sort={{ current_sort }}{% endif %}">
+                        {{ num }}
+                    </a>
+                </li>
+            {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if selected_brand %}&brand={{ selected_brand }}{% endif %}{% if current_sort and current_sort != '-created_at' %}&sort={{ current_sort }}{% endif %}">
+                Наступна &rsaquo;
+            </a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&q={{ search_query }}{% endif %}{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if selected_brand %}&brand={{ selected_brand }}{% endif %}{% if current_sort and current_sort != '-created_at' %}&sort={{ current_sort }}{% endif %}">
+                Остання &raquo;
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
     </div>
 </div>
 

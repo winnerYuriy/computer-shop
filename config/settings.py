@@ -22,7 +22,7 @@ CSRF_TRUSTED_ORIGINS = ['http://localhost:8000', 'http://127.0.0.1:8000']
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
+    'admin_config.apps.TechShopAdminConfig',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'shop', 
     'cart',
     'payment',
+    'accounts', 
 ]
 
 MIDDLEWARE = [
@@ -124,6 +125,14 @@ ADMIN_MEDIA_PREFIX = '/static/admin/'
 # Media files (завантажені користувачем зображення)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# Заміна стандартної моделі користувача
+AUTH_USER_MODEL = 'accounts.User'
+
+# Налаштування автентифікації
+LOGIN_URL = 'accounts:login'
+LOGIN_REDIRECT_URL = 'shop:home'
+LOGOUT_REDIRECT_URL = 'shop:home'
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

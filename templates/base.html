@@ -14,13 +14,35 @@
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    
+    <style>
+        .cart-badge {
+            position: absolute;
+            top: -8px;
+            right: -12px;
+            background: #e94560;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            min-width: 18px;
+            text-align: center;
+        }
+        .dropdown-item i {
+            width: 20px;
+            margin-right: 8px;
+        }
+    </style>
     
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <!-- Навігація -->
+    <!-- Header / Navigation -->
     <nav class="navbar navbar-expand-lg sticky-top">
         <div class="container">
             <a class="navbar-brand" href="{% url 'shop:home' %}">
@@ -32,14 +54,19 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'shop:home' %}">Головна</a>
+                        <a class="nav-link" href="{% url 'shop:home' %}">
+                            <i class="fas fa-home"></i> Головна
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'shop:catalog' %}">Каталог</a>
+                        <a class="nav-link" href="{% url 'shop:catalog' %}">
+                            <i class="fas fa-store"></i> Каталог
+                        </a>
                     </li>
                 </ul>
                 <ul class="navbar-nav">
-                    <li class="nav-item">
+                    <!-- Кошик -->
+                    <li class="nav-item position-relative">
                         <a class="nav-link" href="{% url 'cart:cart_detail' %}">
                             <i class="fas fa-shopping-cart"></i> Кошик
                             {% if cart|length > 0 %}
@@ -47,25 +74,47 @@
                             {% endif %}
                         </a>
                     </li>
+                    
+                    <!-- Авторизація -->
                     {% if user.is_authenticated %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-user"></i> {{ user.username }}
+                            {% if user.avatar %}
+                            <img src="{{ user.avatar.url }}" alt="{{ user.username }}" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover; margin-right: 5px;">
+                            {% else %}
+                            <i class="fas fa-user-circle"></i>
+                            {% endif %}
+                            {{ user.username }}
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="/admin/">Адмінпанель</a></li>
+                            <li><a class="dropdown-item" href="{% url 'accounts:profile' %}">
+                                <i class="fas fa-id-card"></i> Мій профіль
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'accounts:password_change' %}">
+                                <i class="fas fa-key"></i> Змінити пароль
+                            </a></li>
+                            {% if user.is_staff %}
                             <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <form method="post" action="{% url 'admin:logout' %}">
-                                    {% csrf_token %}
-                                    <button type="submit" class="dropdown-item">Вийти</button>
-                                </form>
-                            </li>
+                            <li><a class="dropdown-item" href="/admin/">
+                                <i class="fas fa-shield-alt"></i> Адмінпанель
+                            </a></li>
+                            {% endif %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="{% url 'accounts:logout' %}">
+                                <i class="fas fa-sign-out-alt"></i> Вийти
+                            </a></li>
                         </ul>
                     </li>
                     {% else %}
                     <li class="nav-item">
-                        <a class="nav-link" href="/admin/">Вхід</a>
+                        <a class="nav-link" href="{% url 'accounts:login' %}">
+                            <i class="fas fa-sign-in-alt"></i> Вхід
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'accounts:register' %}">
+                            <i class="fas fa-user-plus"></i> Реєстрація
+                        </a>
                     </li>
                     {% endif %}
                 </ul>
@@ -73,25 +122,35 @@
         </div>
     </nav>
 
-    <!-- Основний контент -->
+    <!-- Main Content -->
     <main>
         <div class="container">
+            <!-- Повідомлення (messages) -->
+            {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show mt-3" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+            {% endif %}
+            
             {% block content %}
             {% endblock %}
         </div>
     </main>
 
-    <!-- Футер -->
+    <!-- Footer -->
     <footer class="footer">
         <div class="container">
             <div class="row">
                 <div class="col-md-4 mb-4">
-                    <h5>TechShop</h5>
-                    <p>Найкращий магазин комп'ютерної та офісної техніки</p>
+                    <h5><i class="fas fa-laptop-code"></i> TechShop</h5>
+                    <p class="text-white-50">Найкращий магазин комп'ютерної та офісної техніки в Україні</p>
                 </div>
                 <div class="col-md-4 mb-4">
                     <h5>Контакти</h5>
-                    <ul class="list-unstyled">
+                    <ul class="list-unstyled text-white-50">
                         <li><i class="fas fa-phone"></i> +38 (044) 123-45-67</li>
                         <li><i class="fas fa-envelope"></i> info@techshop.ua</li>
                         <li><i class="fas fa-map-marker-alt"></i> м. Київ, вул. Технічна, 1</li>
@@ -99,21 +158,23 @@
                 </div>
                 <div class="col-md-4 mb-4">
                     <h5>Години роботи</h5>
-                    <ul class="list-unstyled">
+                    <ul class="list-unstyled text-white-50">
                         <li>Пн-Пт: 9:00 - 20:00</li>
                         <li>Сб: 10:00 - 18:00</li>
                         <li>Нд: Вихідний</li>
                     </ul>
                 </div>
             </div>
-            <hr>
-            <div class="text-center">
+            <hr class="bg-secondary">
+            <div class="text-center text-white-50">
                 <p class="mb-0">&copy; 2026 TechShop. Всі права захищені.</p>
             </div>
         </div>
     </footer>
 
+    <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
     {% block extra_js %}{% endblock %}
 </body>
 </html>

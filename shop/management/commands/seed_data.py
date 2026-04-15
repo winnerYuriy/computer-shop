@@ -1,7 +1,6 @@
-# shop/management/commands/seed_data.py
 
 from django.core.management.base import BaseCommand
-from django.contrib.auth.models import User
+from accounts.models import User
 from django.utils import timezone
 from decimal import Decimal
 from shop.models import (

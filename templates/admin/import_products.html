@@ -1,0 +1,180 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    .import-container {
+        max-width: 800px;
+        margin: 20px auto;
+    }
+    .import-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        padding: 25px;
+        margin-bottom: 20px;
+    }
+    .import-header {
+        border-bottom: 2px solid #3b82f6;
+        padding-bottom: 15px;
+        margin-bottom: 20px;
+    }
+    .import-header h2 {
+        margin: 0;
+        color: #1e293b;
+    }
+    .form-row {
+        margin-bottom: 20px;
+    }
+    .form-row label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #334155;
+    }
+    .form-row input[type="file"] {
+        display: block;
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+    }
+    .form-row input[type="checkbox"] {
+        margin-right: 8px;
+    }
+    .help-text {
+        font-size: 12px;
+        color: #64748b;
+        margin-top: 5px;
+    }
+    .button {
+        background: #3b82f6;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+    }
+    .button:hover {
+        background: #2563eb;
+    }
+    .button-secondary {
+        background: #64748b;
+    }
+    .button-secondary:hover {
+        background: #475569;
+    }
+    .button-group {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 20px;
+    }
+    h3 {
+        color: #1e293b;
+        margin-top: 0;
+        margin-bottom: 15px;
+        font-size: 18px;
+    }
+    h4 {
+        color: #334155;
+        margin-top: 15px;
+        margin-bottom: 10px;
+        font-size: 16px;
+    }
+    ol, ul {
+        padding-left: 20px;
+    }
+    li {
+        margin-bottom: 8px;
+        line-height: 1.5;
+    }
+    code {
+        background: #f1f5f9;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 13px;
+    }
+    hr {
+        margin: 20px 0;
+        border: none;
+        border-top: 1px solid #e2e8f0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="import-container">
+    <div class="import-card">
+        <div class="import-header">
+            <h2>📥 Імпорт товарів з Excel</h2>
+        </div>
+        
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div class="form-row">
+                <label for="excel_file">Excel файл (.xlsx, .xls)</label>
+                <input type="file" name="excel_file" id="excel_file" accept=".xlsx,.xls" required>
+                <div class="help-text">Файл має містити колонки: title, category, brand, price, quantity, description та інші</div>
+            </div>
+            
+            <div class="form-row">
+                <label>
+                    <input type="checkbox" name="update" value="1">
+                    Оновлювати існуючі товари
+                </label>
+                <div class="help-text">Якщо увімкнено, товари з однаковою назвою будуть оновлені</div>
+            </div>
+            
+            <div class="button-group">
+                <button type="submit" class="button">📤 Почати імпорт</button>
+                <a href="/admin-config/export-template/" class="button button-secondary">📄 Завантажити шаблон</a>
+                <a href="/admin/" class="button button-secondary">🔙 Назад до адмінки</a>
+            </div>
+        </form>
+    </div>
+    
+    <div class="import-card">
+        <h3>📋 Інструкція</h3>
+        <ol>
+            <li>Завантажте шаблон Excel (кнопка "Завантажити шаблон")</li>
+            <li>Заповніть дані у файлі</li>
+            <li>Збережіть файл у форматі .xlsx</li>
+            <li>Завантажте файл через форму вище</li>
+            <li>Натисніть "Почати імпорт"</li>
+        </ol>
+        
+        <hr>
+        
+        <h4>📌 Доступні колонки:</h4>
+        <ul>
+            <li><strong>title</strong> * - Назва товару <code>(обов'язково)</code></li>
+            <li><strong>category</strong> - Категорія <code>(створиться автоматично)</code></li>
+            <li><strong>brand</strong> - Бренд <code>(створиться автоматично)</code></li>
+            <li><strong>price</strong> - Ціна закупки</li>
+            <li><strong>retail_price</strong> - Роздрібна ціна</li>
+            <li><strong>quantity</strong> - Кількість на складі</li>
+            <li><strong>available</strong> - В наявності <code>(Так/Ні)</code></li>
+            <li><strong>description</strong> - Короткий опис</li>
+            <li><strong>full_description</strong> - Повний опис</li>
+            <li><strong>article</strong> - Артикул</li>
+            <li><strong>code</strong> - Код товару</li>
+            <li><strong>old_price</strong> - Стара ціна <code>(для знижки)</code></li>
+            <li><strong>discount</strong> - Відсоток знижки</li>
+            <li><strong>warranty</strong> - Гарантія (місяців)</li>
+            <li><strong>country</strong> - Країна виробництва</li>
+            <li><strong>promotions</strong> - Акції <code>(через кому)</code></li>
+            <li><strong>attributes</strong> - Характеристики <code>(у форматі JSON)</code></li>
+        </ul>
+        
+        <div class="help-text" style="margin-top: 15px; padding: 10px; background: #fef3c7; border-radius: 8px;">
+            <strong>💡 Підказка:</strong> Колонки можуть бути українською або англійською мовою. 
+            Система автоматично розпізнає обидва варіанти.
+        </div>
+    </div>
+</div>
+{% endblock %}

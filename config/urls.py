@@ -4,6 +4,8 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.sitemaps.views import sitemap
 from shop.sitemaps import ProductSitemap, CategorySitemap, StaticViewSitemap
+from admin_config.views import import_products_view, export_products_view, export_template_view
+
 
 sitemaps = {
     'products': ProductSitemap,
@@ -13,9 +15,11 @@ sitemaps = {
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('shop.urls')),  
+    path('admin-config/', include('admin_config.urls')),
+    path('', include('shop.urls')),
     path('cart/', include('cart.urls')),
     path('payment/', include('payment.urls')),
+    path('accounts/', include('accounts.urls')),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
 ]
 

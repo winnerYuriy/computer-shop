@@ -1,0 +1,24 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<div class="container" style="max-width: 600px; margin: 50px auto;">
+    <div class="card">
+        <div class="card-header">
+            <h2>📸 Завантаження зображень для товарів</h2>
+        </div>
+        <div class="card-body">
+            <p>Знайдено <strong>{{ products_count }}</strong> товарів без головного зображення.</p>
+            <p>Зображення будуть завантажені через API зовнішнього сервера.</p>
+            <p>Час завантаження залежить від кількості товарів та швидкості з'єднання.</p>
+            
+            <form method="post">
+                {% csrf_token %}
+                <div style="margin-top: 20px;">
+                    <button type="submit" class="button" style="background: #28a745;">✅ Так, завантажити</button>
+                    <a href="{% url 'admin:shop_product_changelist' %}" class="button" style="background: #6c757d;">❌ Скасувати</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

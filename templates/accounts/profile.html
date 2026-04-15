@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}Профіль - TechShop{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Меню</h5>
+            </div>
+            <div class="list-group list-group-flush">
+                <a href="{% url 'accounts:profile' %}" class="list-group-item list-group-item-action active">
+                    <i class="fas fa-user"></i> Профіль
+                </a>
+                <a href="{% url 'accounts:password_change' %}" class="list-group-item list-group-item-action">
+                    <i class="fas fa-key"></i> Змінити пароль
+                </a>
+                <a href="{% url 'accounts:logout' %}" class="list-group-item list-group-item-action text-danger">
+                    <i class="fas fa-sign-out-alt"></i> Вийти
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-9">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Мій профіль</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            {% if user.avatar %}
+                            <img src="{{ user.avatar.url }}" class="img-fluid rounded-circle mb-3" style="max-width: 150px;">
+                            {% else %}
+                            <i class="fas fa-user-circle fa-5x text-muted mb-3"></i>
+                            {% endif %}
+                            {{ form.avatar }}
+                        </div>
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label class="form-label">Логін</label>
+                                {{ form.username }}
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                {{ form.email }}
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Телефон</label>
+                                {{ form.phone }}
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Місто</label>
+                                {{ form.city }}
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Адреса</label>
+                                {{ form.address }}
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Зберегти зміни</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

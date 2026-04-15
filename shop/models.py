@@ -6,8 +6,9 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.urls import reverse
 from django.utils.text import slugify
 from django.utils import timezone
+from config import settings
 from mptt.models import MPTTModel, TreeForeignKey
-from django.contrib.auth.models import User
+
 
 # -------------------------------------------------------------------
 # Утиліти
@@ -384,7 +385,7 @@ class Cart(models.Model):
 # -------------------------------------------------------------------
 class VisitLog(models.Model):
     date = models.DateTimeField(auto_now_add=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
     page = models.CharField(max_length=200)
     ip_address = models.GenericIPAddressField(blank=True, null=True)
 

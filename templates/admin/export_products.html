@@ -1,0 +1,85 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    .export-container {
+        max-width: 600px;
+        margin: 20px auto;
+    }
+    .export-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        padding: 25px;
+    }
+    .export-header {
+        border-bottom: 2px solid #10b981;
+        padding-bottom: 15px;
+        margin-bottom: 20px;
+    }
+    .export-header h2 {
+        margin: 0;
+        color: #1e293b;
+    }
+    .form-row {
+        margin-bottom: 20px;
+    }
+    .form-row label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+    .button {
+        background: #10b981;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        margin-right: 10px;
+    }
+    .button:hover {
+        background: #059669;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="export-container">
+    <div class="export-card">
+        <div class="export-header">
+            <h2>📤 Експорт товарів</h2>
+        </div>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-row">
+                <label>Формат файлу</label>
+                <select name="format" class="form-control">
+                    <option value="xlsx">Excel (.xlsx)</option>
+                    <option value="csv">CSV (.csv)</option>
+                </select>
+            </div>
+            
+            <div class="form-row">
+                <label>
+                    <input type="checkbox" name="include_attributes">
+                    Додати характеристики як окремі колонки
+                </label>
+            </div>
+            
+            <div class="form-row">
+                <button type="submit" class="button">📥 Експортувати</button>
+                <a href="{% url 'admin:index' %}" class="button" style="background: #64748b;">← Назад</a>
+            </div>
+        </form>
+        
+        <div class="help-text" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #e2e8f0;">
+            <strong>ℹ️ Інформація:</strong> Експортуються всі товари з усіма полями (назва, ціна, кількість, категорія, бренд, акції, характеристики).
+        </div>
+    </div>
+</div>
+{% endblock %}
