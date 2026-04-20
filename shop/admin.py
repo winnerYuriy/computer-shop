@@ -108,7 +108,7 @@ class ProductAdmin(admin.ModelAdmin):
     search_fields = ('title', 'code', 'article')
     prepopulated_fields = {'slug': ('title',)}
     list_editable = ('price', 'quantity', 'available')
-    readonly_fields = ('created_at', 'updated_at', 'rating', 'reviews_count')
+    readonly_fields = ('created_at', 'updated_at', 'rating', 'image_preview', 'reviews_count')
     inlines = [ProductImageInline]
     filter_horizontal = ('promotions', 'property_values')
     actions = [download_images_from_api]

@@ -19,6 +19,41 @@ from shop.models import Product, Category, Brand, Promotion
 @staff_member_required
 def import_products_view(request):
     """Сторінка імпорту товарів з Excel з автоматичним створенням категорій та брендів"""
+    # Мапінг колонок Excel -> поля в коді
+    
+    column_mapping = {
+        'Name': 'title',
+        'name': 'title',
+        'Назва': 'title',
+        'CategoryName': 'category',
+        'category_name': 'category',
+        'Категорія': 'category',
+        'Vendor': 'brand',
+        'vendor': 'brand',
+        'Бренд': 'brand',
+        'PriceUAH': 'price',
+        'RetailPrice': 'price',
+        'Ціна': 'price',
+        'RecommendedPrice': 'old_price',
+        'PriceUSD': 'old_price',
+        'Stock': 'quantity',
+        'stock': 'quantity',
+        'Available': 'available',
+        'available': 'available',
+        'Article': 'article',
+        'article': 'article',
+        'Code': 'code',
+        'code': 'code',
+        'Warranty': 'warranty',
+        'warranty': 'warranty',
+        'Country': 'country',
+        'country': 'country',
+        'Description': 'description',
+        'description': 'description',
+        'Model': 'model',
+        'ProductID': 'product_id',
+    }
+
     if request.method == 'POST' and request.FILES.get('excel_file'):
         excel_file = request.FILES['excel_file']
         

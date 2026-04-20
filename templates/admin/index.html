@@ -4,116 +4,7 @@
 {% block extrahead %}
 {{ block.super }}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<style>
-    .dashboard-stats {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        gap: 20px;
-        margin-bottom: 30px;
-    }
-    .stat-card {
-        background: white;
-        border-radius: 16px;
-        padding: 20px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        transition: transform 0.2s, box-shadow 0.2s;
-        border: 1px solid #eef2f6;
-    }
-    body.dark-mode .stat-card {
-        background: #1e293b;
-        border-color: #334155;
-        color: #e2e8f0;
-    }
-    .stat-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 12px 24px rgba(0,0,0,0.1);
-    }
-    .stat-icon { font-size: 32px; color: #3b82f6; margin-bottom: 12px; }
-    .stat-value { font-size: 28px; font-weight: 700; color: #1e293b; margin-bottom: 4px; }
-    body.dark-mode .stat-value { color: #f8fafc; }
-    .stat-label { color: #64748b; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
-    .stat-change { font-size: 13px; margin-top: 8px; color: #10b981; }
-    .recent-orders {
-        background: white;
-        border-radius: 16px;
-        padding: 20px;
-        border: 1px solid #eef2f6;
-        margin-top: 20px;
-    }
-    body.dark-mode .recent-orders {
-        background: #1e293b;
-        border-color: #334155;
-    }
-    .recent-orders h3 { font-size: 18px; margin-bottom: 15px; }
-    .recent-orders table { width: 100%; }
-    .recent-orders th, .recent-orders td { padding: 10px 0; border-bottom: 1px solid #eef2f6; }
-    body.dark-mode .recent-orders th, body.dark-mode .recent-orders td { border-bottom-color: #334155; }
-    
-    /* Стилі для блоку імпорту/експорту */
-    .import-export-module {
-        background: white;
-        border-radius: 16px;
-        padding: 20px;
-        border: 1px solid #eef2f6;
-        margin-bottom: 30px;
-    }
-    body.dark-mode .import-export-module {
-        background: #1e293b;
-        border-color: #334155;
-    }
-    .import-export-module h3 {
-        font-size: 18px;
-        margin-bottom: 15px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    .import-export-links {
-        display: flex;
-        gap: 15px;
-        flex-wrap: wrap;
-    }
-    .import-export-links a {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 10px 20px;
-        background: #f8fafc;
-        border-radius: 10px;
-        text-decoration: none;
-        color: #1e293b;
-        transition: all 0.2s;
-        border: 1px solid #e2e8f0;
-    }
-    body.dark-mode .import-export-links a {
-        background: #334155;
-        color: #e2e8f0;
-        border-color: #475569;
-    }
-    .import-export-links a:hover {
-        background: #3b82f6;
-        color: white;
-        transform: translateY(-2px);
-    }
-    .import-export-links i {
-        font-size: 16px;
-    }
-    
-    /* Додаткові стилі */
-    .badge {
-        display: inline-block;
-        padding: 4px 10px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 600;
-    }
-    .badge-new { background: #10b981; color: white; }
-    .badge-processing { background: #f59e0b; color: white; }
-    .badge-paid { background: #3b82f6; color: white; }
-    .badge-shipped { background: #8b5cf6; color: white; }
-    .badge-delivered { background: #06b6d4; color: white; }
-    .badge-cancelled { background: #ef4444; color: white; }
-</style>
+<link rel="stylesheet" href="{% static 'admin/css/dashboard.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -159,6 +50,16 @@
         </div>
     </div>
 
+    <!-- Блок резервного копіювання -->
+    <div class="import-export-module">
+        <h3><i class="fas fa-database"></i> Резервне копіювання</h3>
+        <div class="import-export-links">
+            <a href="{% url 'backup:dashboard' %}">
+                <i class="fas fa-database"></i> Керування бекапами
+            </a>
+        </div>
+    </div>
+
     <!-- Останні замовлення -->
     <div class="recent-orders">
         <h3><i class="fas fa-clock"></i> Останні замовлення</h3>
@@ -187,7 +88,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="5">Немає замовлень</td>
+                    <td colspan="5" style="text-align: center;">Немає замовлень</td>
                 </tr>
                 {% endfor %}
             </tbody>

@@ -1,0 +1,16 @@
+{% extends "admin/change_list.html" %}
+{% load static %}
+
+{% block object-tools %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+    <div>
+        <a href="{% url 'import_products' %}" class="button" style="background: #10b981; padding: 10px 20px; border-radius: 8px; color: white; text-decoration: none;">
+            <i class="fas fa-upload"></i> Імпорт товарів з Excel
+        </a>
+        <a href="{% url 'export_products' %}" class="button" style="background: #3b82f6; padding: 10px 20px; border-radius: 8px; color: white; text-decoration: none;">
+            <i class="fas fa-download"></i> Експорт товарів
+        </a>
+    </div>
+    {{ block.super }}
+</div>
+{% endblock %}

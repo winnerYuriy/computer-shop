@@ -1,180 +1,152 @@
 {% extends "admin/base_site.html" %}
 {% load static %}
 
-{% block extrastyle %}
+{% block extrahead %}
 {{ block.super }}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
     .import-container {
         max-width: 800px;
         margin: 20px auto;
-    }
-    .import-card {
         background: white;
-        border-radius: 12px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        padding: 25px;
+        border-radius: 16px;
+        padding: 30px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        border: 1px solid #eef2f6;
+    }
+    body.dark-mode .import-container {
+        background: #1e293b;
+        border-color: #334155;
+    }
+    .import-container h1 {
+        font-size: 24px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .form-group {
         margin-bottom: 20px;
     }
-    .import-header {
-        border-bottom: 2px solid #3b82f6;
-        padding-bottom: 15px;
-        margin-bottom: 20px;
-    }
-    .import-header h2 {
-        margin: 0;
-        color: #1e293b;
-    }
-    .form-row {
-        margin-bottom: 20px;
-    }
-    .form-row label {
+    .form-group label {
         display: block;
         font-weight: 600;
         margin-bottom: 8px;
-        color: #334155;
     }
-    .form-row input[type="file"] {
+    .form-group input[type="file"] {
         display: block;
         width: 100%;
         padding: 10px;
         border: 1px solid #e2e8f0;
         border-radius: 8px;
+        background: #f8fafc;
     }
-    .form-row input[type="checkbox"] {
-        margin-right: 8px;
+    body.dark-mode .form-group input[type="file"] {
+        background: #334155;
+        border-color: #475569;
+        color: white;
     }
     .help-text {
         font-size: 12px;
         color: #64748b;
         margin-top: 5px;
     }
+    .submit-row {
+        margin-top: 30px;
+        display: flex;
+        gap: 15px;
+        align-items: center;
+    }
     .button {
         background: #3b82f6;
         color: white;
+        padding: 10px 24px;
         border: none;
-        padding: 10px 20px;
         border-radius: 8px;
         cursor: pointer;
-        text-decoration: none;
-        display: inline-block;
+        font-weight: 600;
+        transition: background 0.2s;
     }
     .button:hover {
         background: #2563eb;
     }
-    .button-secondary {
+    .button-cancel {
         background: #64748b;
     }
-    .button-secondary:hover {
+    .button-cancel:hover {
         background: #475569;
     }
-    .button-group {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-        margin-top: 20px;
+    .result-box {
+        margin-top: 30px;
+        padding: 15px;
+        border-radius: 8px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
     }
-    h3 {
-        color: #1e293b;
-        margin-top: 0;
-        margin-bottom: 15px;
-        font-size: 18px;
+    body.dark-mode .result-box {
+        background: #334155;
+        border-color: #475569;
     }
-    h4 {
-        color: #334155;
-        margin-top: 15px;
-        margin-bottom: 10px;
-        font-size: 16px;
-    }
-    ol, ul {
-        padding-left: 20px;
-    }
-    li {
-        margin-bottom: 8px;
-        line-height: 1.5;
-    }
-    code {
-        background: #f1f5f9;
-        padding: 2px 6px;
-        border-radius: 4px;
-        font-size: 13px;
-    }
-    hr {
-        margin: 20px 0;
-        border: none;
-        border-top: 1px solid #e2e8f0;
-    }
+    .result-success { color: #10b981; }
+    .result-error { color: #ef4444; }
+    .result-warning { color: #f59e0b; }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="import-container">
-    <div class="import-card">
-        <div class="import-header">
-            <h2>📥 Імпорт товарів з Excel</h2>
-        </div>
-        
-        <form method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            
-            <div class="form-row">
-                <label for="excel_file">Excel файл (.xlsx, .xls)</label>
-                <input type="file" name="excel_file" id="excel_file" accept=".xlsx,.xls" required>
-                <div class="help-text">Файл має містити колонки: title, category, brand, price, quantity, description та інші</div>
-            </div>
-            
-            <div class="form-row">
-                <label>
-                    <input type="checkbox" name="update" value="1">
-                    Оновлювати існуючі товари
-                </label>
-                <div class="help-text">Якщо увімкнено, товари з однаковою назвою будуть оновлені</div>
-            </div>
-            
-            <div class="button-group">
-                <button type="submit" class="button">📤 Почати імпорт</button>
-                <a href="/admin-config/export-template/" class="button button-secondary">📄 Завантажити шаблон</a>
-                <a href="/admin/" class="button button-secondary">🔙 Назад до адмінки</a>
-            </div>
-        </form>
-    </div>
+    <h1><i class="fas fa-upload"></i> Імпорт товарів з Excel</h1>
     
-    <div class="import-card">
-        <h3>📋 Інструкція</h3>
-        <ol>
-            <li>Завантажте шаблон Excel (кнопка "Завантажити шаблон")</li>
-            <li>Заповніть дані у файлі</li>
-            <li>Збережіть файл у форматі .xlsx</li>
-            <li>Завантажте файл через форму вище</li>
-            <li>Натисніть "Почати імпорт"</li>
-        </ol>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
         
-        <hr>
-        
-        <h4>📌 Доступні колонки:</h4>
-        <ul>
-            <li><strong>title</strong> * - Назва товару <code>(обов'язково)</code></li>
-            <li><strong>category</strong> - Категорія <code>(створиться автоматично)</code></li>
-            <li><strong>brand</strong> - Бренд <code>(створиться автоматично)</code></li>
-            <li><strong>price</strong> - Ціна закупки</li>
-            <li><strong>retail_price</strong> - Роздрібна ціна</li>
-            <li><strong>quantity</strong> - Кількість на складі</li>
-            <li><strong>available</strong> - В наявності <code>(Так/Ні)</code></li>
-            <li><strong>description</strong> - Короткий опис</li>
-            <li><strong>full_description</strong> - Повний опис</li>
-            <li><strong>article</strong> - Артикул</li>
-            <li><strong>code</strong> - Код товару</li>
-            <li><strong>old_price</strong> - Стара ціна <code>(для знижки)</code></li>
-            <li><strong>discount</strong> - Відсоток знижки</li>
-            <li><strong>warranty</strong> - Гарантія (місяців)</li>
-            <li><strong>country</strong> - Країна виробництва</li>
-            <li><strong>promotions</strong> - Акції <code>(через кому)</code></li>
-            <li><strong>attributes</strong> - Характеристики <code>(у форматі JSON)</code></li>
-        </ul>
-        
-        <div class="help-text" style="margin-top: 15px; padding: 10px; background: #fef3c7; border-radius: 8px;">
-            <strong>💡 Підказка:</strong> Колонки можуть бути українською або англійською мовою. 
-            Система автоматично розпізнає обидва варіанти.
+        <div class="form-group">
+            <label for="excel_file">Excel файл (.xlsx, .xls)</label>
+            <input type="file" name="excel_file" id="excel_file" accept=".xlsx,.xls" required>
+            <div class="help-text">
+                <i class="fas fa-info-circle"></i> 
+                Файл повинен містити колонки: Article, Name, PriceUSD, CategoryName, Vendor та інші.
+                <a href="/admin/export-template/" style="color: #3b82f6;">Завантажити шаблон</a>
+            </div>
         </div>
+        
+        <div class="form-group">
+            <label for="usd_rate">Курс USD до UAH (залиште порожнім для автоматичного отримання)</label>
+            <input type="number" name="usd_rate" id="usd_rate" step="0.01" placeholder="Автоматично">
+        </div>
+        
+        <div class="form-group">
+            <label>
+                <input type="checkbox" name="update_existing" value="yes">
+                Оновлювати існуючі товари (за артикулом)
+            </label>
+        </div>
+        
+        <div class="submit-row">
+            <button type="submit" class="button"><i class="fas fa-upload"></i> Почати імпорт</button>
+            <a href="{% url 'admin:shop_product_changelist' %}" class="button button-cancel"><i class="fas fa-times"></i> Скасувати</a>
+        </div>
+    </form>
+    
+    {% if result %}
+    <div class="result-box">
+        <h3><i class="fas fa-chart-line"></i> Результат імпорту:</h3>
+        <ul>
+            <li class="result-success">✅ Створено: {{ result.created|default:"0" }}</li>
+            <li class="result-warning">🔄 Оновлено: {{ result.updated|default:"0" }}</li>
+            <li class="result-error">❌ Помилок: {{ result.errors|default:"0" }}</li>
+        </ul>
+        {% if result.error_list %}
+        <h4>Деталі помилок:</h4>
+        <ul class="result-error">
+            {% for error in result.error_list %}
+            <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        <hr>
+        <a href="{% url 'admin:shop_product_changelist' %}" class="button">Перейти до списку товарів</a>
     </div>
+    {% endif %}
 </div>
 {% endblock %}

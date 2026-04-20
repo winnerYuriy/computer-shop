@@ -1,26 +1,24 @@
+# config/urls.py
+
 from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from django.contrib.sitemaps.views import sitemap
-from shop.sitemaps import ProductSitemap, CategorySitemap, StaticViewSitemap
-from admin_config.views import import_products_view, export_products_view, export_template_view
-
-
-sitemaps = {
-    'products': ProductSitemap,
-    'categories': CategorySitemap,
-    'static': StaticViewSitemap,
-}
+from shop.admin_views import import_products, export_products, export_template
 
 urlpatterns = [
+    # Кастомні адмін-URL мають бути перед admin.site.urls
+    path('admin/import-products/', import_products, name='import_products'),
+    path('admin/export-products/', export_products, name='export_products'),
+    path('admin/export-template/', export_template, name='export_template'),
+    
+    # Стандартна адмінка Django
     path('admin/', admin.site.urls),
-    path('admin-config/', include('admin_config.urls')),
+    
+    path('accounts/', include('accounts.urls')),
     path('', include('shop.urls')),
     path('cart/', include('cart.urls')),
     path('payment/', include('payment.urls')),
-    path('accounts/', include('accounts.urls')),
-    path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
 ]
 
 if settings.DEBUG:

@@ -98,6 +98,16 @@ class Category(MPTTModel):
     )
     image = models.ImageField('Зображення', upload_to='categories/', blank=True, null=True)
     description = models.TextField('Опис', blank=True)
+    
+    # ДОДАЙТЕ ЦЕ ПОЛЕ:
+    external_id = models.CharField(
+        'Зовнішній ID',
+        max_length=100,
+        blank=True,
+        unique=True,
+        null=True,
+        help_text='ID з імпорту (наприклад, group_123, cat_456)'
+    )
 
     class MPTTMeta:
         order_insertion_by = ['name']
@@ -116,7 +126,6 @@ class Category(MPTTModel):
 
     def get_absolute_url(self):
         return reverse('shop:category_detail', args=[self.slug])
-
 
 # -------------------------------------------------------------------
 # Властивості товарів (характеристики)

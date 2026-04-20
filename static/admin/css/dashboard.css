@@ -1,0 +1,216 @@
+/* Розширення головних контейнерів адмінки на всю ширину */
+#container,
+#content,
+#content-main,
+.dashboard-stats {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
+}
+
+/* Скидання обмежень для колонок адмінки */
+#content {
+    margin: 0 !important;
+    padding: 20px !important;
+}
+
+/* Якщо є обгортка з класом .main */
+.main,
+#main {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+@media (max-width: 576px) {
+    .dashboard-stats {
+        grid-template-columns: 1fr;
+    }
+}
+
+.stat-card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: 1px solid #eef2f6;
+}
+
+/* Темна тема */
+body.dark-mode .stat-card {
+    background: #1e293b;
+    border-color: #334155;
+    color: #e2e8f0;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+}
+
+.stat-icon { 
+    font-size: 32px; 
+    color: #3b82f6; 
+    margin-bottom: 12px; 
+}
+
+.stat-value { 
+    font-size: 28px; 
+    font-weight: 700; 
+    color: #1e293b; 
+    margin-bottom: 4px; 
+}
+
+body.dark-mode .stat-value { 
+    color: #f8fafc; 
+}
+
+.stat-label { 
+    color: #64748b; 
+    font-size: 14px; 
+    text-transform: uppercase; 
+    letter-spacing: 0.5px; 
+}
+
+.stat-change { 
+    font-size: 13px; 
+    margin-top: 8px; 
+    color: #10b981; 
+}
+
+/* Стилі для блоку імпорту/експорту */
+.import-export-module {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid #eef2f6;
+    margin-bottom: 30px;
+}
+
+body.dark-mode .import-export-module {
+    background: #1e293b;
+    border-color: #334155;
+}
+
+.import-export-module h3 {
+    font-size: 18px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.import-export-links {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.import-export-links a {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: #f8fafc;
+    border-radius: 10px;
+    text-decoration: none;
+    color: #1e293b;
+    transition: all 0.2s;
+    border: 1px solid #e2e8f0;
+}
+
+body.dark-mode .import-export-links a {
+    background: #334155;
+    color: #e2e8f0;
+    border-color: #475569;
+}
+
+.import-export-links a:hover {
+    background: #3b82f6;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.import-export-links i {
+    font-size: 16px;
+}
+
+/* Стилі для останніх замовлень */
+.recent-orders {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid #eef2f6;
+    margin-top: 20px;
+}
+
+body.dark-mode .recent-orders {
+    background: #1e293b;
+    border-color: #334155;
+}
+
+.recent-orders h3 {
+    font-size: 18px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.recent-orders table {
+    width: 100%;
+}
+
+.recent-orders th,
+.recent-orders td {
+    padding: 12px 8px;
+    text-align: left;
+    border-bottom: 1px solid #eef2f6;
+}
+
+body.dark-mode .recent-orders th,
+body.dark-mode .recent-orders td {
+    border-bottom-color: #334155;
+}
+
+.recent-orders th {
+    font-weight: 600;
+    color: #64748b;
+}
+
+body.dark-mode .recent-orders th {
+    color: #94a3b8;
+}
+
+/* Бейджі статусів */
+.badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.badge-new { background: #10b981; color: white; }
+.badge-processing { background: #f59e0b; color: white; }
+.badge-paid { background: #3b82f6; color: white; }
+.badge-shipped { background: #8b5cf6; color: white; }
+.badge-delivered { background: #06b6d4; color: white; }
+.badge-cancelled { background: #ef4444; color: white; }
+
+/* Адаптивність для таблиці */
+@media (max-width: 768px) {
+    .recent-orders table {
+        font-size: 14px;
+    }
+    
+    .recent-orders th,
+    .recent-orders td {
+        padding: 8px 4px;
+    }
+    
+    .import-export-links a {
+        padding: 8px 16px;
+        font-size: 14px;
+    }
+}

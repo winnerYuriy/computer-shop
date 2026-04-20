@@ -1,0 +1,129 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    .backup-container { max-width: 1200px; margin: 20px auto; }
+    .backup-card { background: white; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); padding: 20px; margin-bottom: 20px; }
+    .backup-header { border-bottom: 2px solid #3b82f6; padding-bottom: 15px; margin-bottom: 20px; }
+    .backup-header h2 { margin: 0; color: #1e293b; }
+    .backup-actions { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 20px; }
+    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 8px; text-decoration: none; color: white; border: none; cursor: pointer; }
+    .btn-primary { background: #3b82f6; }
+    .btn-primary:hover { background: #2563eb; }
+    .btn-success { background: #10b981; }
+    .btn-success:hover { background: #059669; }
+    .btn-danger { background: #ef4444; }
+    .btn-danger:hover { background: #dc2626; }
+    .btn-warning { background: #f59e0b; }
+    .btn-warning:hover { background: #d97706; }
+    .backup-table { width: 100%; border-collapse: collapse; }
+    .backup-table th, .backup-table td { padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+    .backup-table th { background: #f8fafc; font-weight: 600; }
+    .backup-table tr:hover { background: #f1f5f9; }
+    .file-size { color: #64748b; font-size: 12px; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+    .badge-json { background: #3b82f6; color: white; }
+    .badge-sql { background: #10b981; color: white; }
+    .badge-gz { background: #f59e0b; color: white; }
+    .actions { display: flex; gap: 8px; }
+    .form-inline { display: inline; }
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center; }
+    .modal.active { display: flex; }
+    .modal-content { background: white; border-radius: 12px; padding: 25px; max-width: 400px; width: 90%; }
+    .modal-header { border-bottom: 1px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 15px; }
+    .modal-footer { border-top: 1px solid #e2e8f0; padding-top: 15px; margin-top: 15px; display: flex; justify-content: flex-end; gap: 10px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="backup-container">
+    <div class="backup-card">
+        <div class="backup-header">
+            <h2>💾 Резервне копіювання бази даних</h2>
+        </div>
+        
+        <div class="backup-actions">
+            <form method="post" action="{% url 'backup:create' %}" class="form-inline">
+                {% csrf_token %}
+                <input type="hidden" name="backup_type" value="full">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-database"></i> Повний бекап (JSON + SQL)
+                </button>
+            </form>
+            <form method="post" action="{% url 'backup:create' %}" class="form-inline">
+                {% csrf_token %}
+                <input type="hidden" name="backup_type" value="db">
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-table"></i> Тільки SQL дамп
+                </button>
+            </form>
+            <form method="post" action="{% url 'backup:create' %}" class="form-inline">
+                {% csrf_token %}
+                <input type="hidden" name="backup_type" value="media">
+                <button type="submit" class="btn btn-warning">
+                    <i class="fas fa-image"></i> Бекап медіа файлів
+                </button>
+            </form>
+        </div>
+        
+        <h3>📋 Список бекапів</h3>
+        
+        {% if backups %}
+        <table class="backup-table">
+            <thead>
+                <tr>
+                    <th>Назва файлу</th>
+                    <th>Тип</th>
+                    <th>Розмір</th>
+                    <th>Дата створення</th>
+                    <th>Дії</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for backup in backups %}
+                <tr>
+                    <td>{{ backup.name }}</a></td>
+                    <td><span class="badge badge-{{ backup.type }}">{{ backup.type|upper }}</span></td>
+                    <td class="file-size">{{ backup.size|filesizeformat }}</td>
+                    <td>{{ backup.created|date:"d.m.Y H:i:s" }}</td>
+                    <td class="actions">
+                        <a href="{% url 'backup:download' backup.name %}" class="btn btn-primary" style="padding: 5px 10px; font-size: 12px;">
+                            <i class="fas fa-download"></i> Завантажити
+                        </a>
+                        <form method="post" action="{% url 'backup:restore' backup.name %}" class="form-inline" onsubmit="return confirmRestore(event)">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-success" style="padding: 5px 10px; font-size: 12px;">
+                                <i class="fas fa-undo"></i> Відновити
+                            </button>
+                        </form>
+                        <form method="post" action="{% url 'backup:delete' backup.name %}" class="form-inline" onsubmit="return confirm('Ви впевнені, що хочете видалити цей бекап?')">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger" style="padding: 5px 10px; font-size: 12px;">
+                                <i class="fas fa-trash"></i> Видалити
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5">Немає бекапів. Створіть перший бекап за допомогою кнопок вище.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>Немає бекапів. Створіть перший бекап за допомогою кнопок вище.</p>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function confirmRestore(event) {
+    event.preventDefault();
+    if (confirm('Увага! Відновлення бази даних видалить всі поточні дані та замінить їх даними з бекапу. Продовжити?')) {
+        event.target.submit();
+    }
+    return false;
+}
+</script>
+{% endblock %}
