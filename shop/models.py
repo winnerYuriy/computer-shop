@@ -1,6 +1,7 @@
 # shop/models.py
 
 import os
+from datetime import date, datetime
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.urls import reverse
@@ -240,9 +241,17 @@ class Product(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.title)
-        if self.discount and not self.old_price:
-            self.old_price = self.price - (self.price * self.discount / 100)
+            base_slug = slugify(self.title)
+            slug = base_slug
+            counter = 1
+            
+            # Перевіряємо унікальність slug
+            while Product.objects.filter(slug=slug).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            
+            self.slug = slug
+        
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -334,6 +343,14 @@ class Order(models.Model):
     ]
 
     full_name = models.CharField('ПІБ', max_length=200)
+    legal_entity = models.ForeignKey(
+        'LegalEntity', 
+        on_delete=models.SET_NULL, 
+        blank=True, 
+        null=True, 
+        verbose_name='Юридична особа (покупець)'
+    )
+    invoice_required = models.BooleanField('Потрібен рахунок-фактура', default=False)
     phone = models.CharField('Телефон', max_length=20)
     email = models.EmailField('Email')
     address = models.TextField('Адреса доставки', blank=True)
@@ -400,3 +417,240 @@ class VisitLog(models.Model):
 
     def __str__(self):
         return f'{self.user or "Анонім"} - {self.page} - {self.date}'
+    
+
+class RecentlyViewed(models.Model):
+    """Модель для зберігання історії переглядів користувача"""
+    session_key = models.CharField('Ключ сесії', max_length=40, db_index=True)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name='Товар', related_name='recently_viewed')
+    viewed_at = models.DateTimeField('Дата перегляду', auto_now_add=True)
+    
+    class Meta:
+        verbose_name = 'Переглянутий товар'
+        verbose_name_plural = 'Історія переглядів'
+        ordering = ['-viewed_at']
+        unique_together = ['session_key', 'product']  # Запобігає дублюванню
+    
+    def __str__(self):
+        return f"{self.session_key} - {self.product.title}"
+    
+    # shop/models.py (додати в кінець файлу)
+
+# ============================================================
+# МОДЕЛІ ДЛЯ ЮРИДИЧНИХ ОСІБ ТА ДОКУМЕНТІВ
+# ============================================================
+
+class LegalEntity(models.Model):
+    """Юридична особа (підприємство/організація)"""
+    
+    # Основна інформація
+    name = models.CharField('Назва організації', max_length=250)
+    short_name = models.CharField('Коротка назва', max_length=100, blank=True)
+    code_edrpou = models.CharField('Код ЄДРПОУ', max_length=10, unique=True, help_text='Унікальний код підприємства')
+    
+    # Реквізити
+    tax_number = models.CharField('ІПН', max_length=12, blank=True, help_text='Індивідуальний податковий номер')
+    vat_number = models.CharField('Платник ПДВ', max_length=12, blank=True, help_text='Свідоцтво ПДВ')
+    
+    # Контактна інформація
+    legal_address = models.TextField('Юридична адреса', blank=True)
+    actual_address = models.TextField('Фактична адреса', blank=True)
+    phone = models.CharField('Телефон', max_length=20, blank=True)
+    email = models.EmailField('Email', blank=True)
+    website = models.URLField('Веб-сайт', blank=True)
+    
+    # Банківські реквізити
+    bank_name = models.CharField('Назва банку', max_length=200, blank=True)
+    bank_account = models.CharField('Розрахунковий рахунок', max_length=29, blank=True)
+    bank_mfo = models.CharField('МФО', max_length=6, blank=True)
+    
+    # Додатково
+    director = models.CharField('Директор/Керівник', max_length=200, blank=True)
+    accountant = models.CharField('Головний бухгалтер', max_length=200, blank=True)
+    
+    # Статус
+    is_active = models.BooleanField('Активний', default=True)
+    notes = models.TextField('Примітки', blank=True)
+    
+    created_at = models.DateTimeField('Дата створення', auto_now_add=True)
+    updated_at = models.DateTimeField('Дата оновлення', auto_now=True)
+    
+    class Meta:
+        verbose_name = 'Юридична особа'
+        verbose_name_plural = 'Юридичні особи'
+        ordering = ['name']
+        indexes = [
+            models.Index(fields=['code_edrpou']),
+            models.Index(fields=['is_active']),
+        ]
+    
+    def __str__(self):
+        return f"{self.name} ({self.code_edrpou})"
+    
+    def get_full_address(self):
+        if self.legal_address:
+            return self.legal_address
+        return self.actual_address
+
+
+class ServiceCategory(models.Model):
+    """Категорія послуг"""
+    name = models.CharField('Назва категорії', max_length=150)
+    slug = models.SlugField('URL', max_length=150, unique=True, blank=True)
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True, verbose_name='Батьківська категорія')
+    description = models.TextField('Опис', blank=True)
+    icon = models.CharField('Іконка (Font Awesome)', max_length=50, blank=True, help_text='Наприклад: fa-print')
+    sort_order = models.IntegerField('Порядок сортування', default=0)
+    is_active = models.BooleanField('Активна', default=True)
+    
+    class Meta:
+        verbose_name = 'Категорія послуг'
+        verbose_name_plural = 'Категорії послуг'
+        ordering = ['sort_order', 'name']
+    
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+    
+    def __str__(self):
+        if self.parent:
+            return f"{self.parent} → {self.name}"
+        return self.name
+
+
+class Service(models.Model):
+    """Послуга або робота"""
+    SERVICE_TYPES = [
+        ('service', 'Послуга'),
+        ('spare_part', 'Комплектуюча'),
+        ('consumable', 'Витратний матеріал'),
+    ]
+    
+    name = models.CharField('Назва', max_length=250)
+    slug = models.SlugField('URL', max_length=250, unique=True, blank=True)
+    category = models.ForeignKey(ServiceCategory, on_delete=models.CASCADE, verbose_name='Категорія', related_name='services')
+    service_type = models.CharField('Тип', max_length=20, choices=SERVICE_TYPES, default='service')
+    
+    # Ціна
+    price = models.DecimalField('Ціна', max_digits=12, decimal_places=2, default=0)
+    cost_price = models.DecimalField('Собівартість', max_digits=12, decimal_places=2, blank=True, null=True, help_text='Для аналітики')
+    
+    # Опис
+    description = models.TextField('Опис', blank=True)
+    execution_time = models.CharField('Час виконання', max_length=100, blank=True, help_text='Наприклад: 1-2 дня, 1 година')
+    
+    # Характеристики (JSON)
+    specifications = models.JSONField('Характеристики', default=dict, blank=True)
+    
+    # Статус
+    is_active = models.BooleanField('Активна', default=True)
+    is_popular = models.BooleanField('Популярна послуга', default=False)
+    
+    created_at = models.DateTimeField('Дата створення', auto_now_add=True)
+    updated_at = models.DateTimeField('Дата оновлення', auto_now=True)
+    
+    class Meta:
+        verbose_name = 'Послуга/Комплектуюча'
+        verbose_name_plural = 'Послуги та комплектуючі'
+        ordering = ['service_type', 'name']
+    
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+    
+    def __str__(self):
+        return f"{self.get_service_type_display()}: {self.name} - {self.price}₴"
+
+
+class Invoice(models.Model):
+    """Рахунок-фактура для юридичної особи"""
+    INVOICE_TYPES = [
+        ('invoice', 'Рахунок-фактура'),
+        ('tax_invoice', 'Податкова накладна'),
+        ('proforma', 'Проформа-рахунок'),
+    ]
+    
+    PAYMENT_STATUS = [
+        ('unpaid', 'Не оплачений'),
+        ('partial', 'Частково оплачений'),
+        ('paid', 'Оплачений'),
+        ('overdue', 'Прострочений'),
+    ]
+    
+    # Номер і дата
+    invoice_number = models.CharField('Номер рахунку', max_length=50, unique=True)
+    invoice_date = models.DateField('Дата виставлення', default=date.today)  # використовуємо date.today
+    due_date = models.DateField('Термін оплати', blank=True, null=True)
+
+    # Контрагенти
+    legal_entity = models.ForeignKey(LegalEntity, on_delete=models.CASCADE, verbose_name='Отримувач (Покупець)', related_name='invoices')
+    seller = models.CharField('Продавець', max_length=250, default='ТОВ "TechShop"')
+    seller_code = models.CharField('Код ЄДРПОУ продавця', max_length=10, default='12345678')
+    seller_address = models.TextField('Адреса продавця', default='м. Київ, вул. Технічна, 1')
+    
+    # Суми
+    subtotal = models.DecimalField('Сума без ПДВ', max_digits=12, decimal_places=2, default=0)
+    vat_rate = models.DecimalField('Ставка ПДВ', max_digits=5, decimal_places=2, default=20)
+    vat_amount = models.DecimalField('Сума ПДВ', max_digits=12, decimal_places=2, default=0)
+    total_amount = models.DecimalField('Загальна сума', max_digits=12, decimal_places=2, default=0)
+    
+    # Оплата
+    payment_status = models.CharField('Статус оплати', max_length=20, choices=PAYMENT_STATUS, default='unpaid')
+    paid_amount = models.DecimalField('Сплачено', max_digits=12, decimal_places=2, default=0)
+    payment_date = models.DateField('Дата оплати', blank=True, null=True)
+    payment_method = models.CharField('Спосіб оплати', max_length=50, blank=True)
+    
+    # Додатково
+    order = models.ForeignKey('Order', on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Замовлення')
+    notes = models.TextField('Примітки', blank=True)
+    
+    # Терміни
+    due_date = models.DateField('Термін оплати', blank=True, null=True)
+    created_by = models.CharField('Створив', max_length=100, blank=True)
+    
+    created_at = models.DateTimeField('Дата створення', auto_now_add=True)
+    updated_at = models.DateTimeField('Дата оновлення', auto_now=True)
+    
+    class Meta:
+        verbose_name = 'Рахунок-фактура'
+        verbose_name_plural = 'Рахунки-фактури'
+        ordering = ['-invoice_date', '-invoice_number']
+    
+    def __str__(self):
+        return f"Рахунок №{self.invoice_number} від {self.invoice_date}"
+
+    def save(self, *args, **kwargs):
+        if not self.invoice_number:
+            year = date.today().strftime('%Y')  # використовуємо date.today()
+            last_invoice = Invoice.objects.filter(invoice_number__startswith=f'РФ-{year}').order_by('-invoice_number').first()
+            if last_invoice:
+                last_num = int(last_invoice.invoice_number.split('-')[-1])
+                new_num = last_num + 1
+            else:
+                new_num = 1
+            self.invoice_number = f"РФ-{year}-{new_num:06d}"
+        super().save(*args, **kwargs)
+
+
+class InvoiceItem(models.Model):
+    """Позиція в рахунку"""
+    invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, related_name='items', verbose_name='Рахунок')
+    service = models.ForeignKey(Service, on_delete=models.CASCADE, blank=True, null=True, verbose_name='Послуга/Товар')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, blank=True, null=True, verbose_name='Товар')
+    
+    name = models.CharField('Назва', max_length=250)
+    quantity = models.DecimalField('Кількість', max_digits=10, decimal_places=2, default=1)
+    unit = models.CharField('Одиниця виміру', max_length=20, default='шт')
+    price = models.DecimalField('Ціна', max_digits=12, decimal_places=2)
+    vat_rate = models.DecimalField('Ставка ПДВ', max_digits=5, decimal_places=2, default=20)
+    total = models.DecimalField('Сума', max_digits=12, decimal_places=2, default=0)
+    
+    def save(self, *args, **kwargs):
+        self.total = self.quantity * self.price
+        super().save(*args, **kwargs)
+    
+    def __str__(self):
+        return f"{self.name} x {self.quantity} = {self.total}₴"
+    

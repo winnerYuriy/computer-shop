@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
     .import-container {
-        max-width: 800px;
+        max-width: 900px;
         margin: 20px auto;
         background: white;
         border-radius: 16px;
@@ -14,82 +14,332 @@
         box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         border: 1px solid #eef2f6;
     }
+    
     body.dark-mode .import-container {
         background: #1e293b;
         border-color: #334155;
     }
+    
     .import-container h1 {
         font-size: 24px;
-        margin-bottom: 20px;
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: #1e293b;
+        border-bottom: 2px solid #eef2f6;
+        padding-bottom: 15px;
+    }
+    
+    body.dark-mode .import-container h1 {
+        color: #f8fafc;
+        border-bottom-color: #334155;
+    }
+    
+    .form-group {
+        margin-bottom: 25px;
+    }
+    
+    .form-group label {
+        display: block;
+        font-weight: 700;
+        margin-bottom: 10px;
+        color: #1e293b;
+    }
+    
+    body.dark-mode .form-group label {
+        color: #e2e8f0;
+    }
+    
+    .form-group input[type="file"] {
+        display: block;
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        background: #f8fafc;
+        transition: all 0.2s;
+        cursor: pointer;
+    }
+    
+    .form-group input[type="file"]:hover {
+        border-color: #3b82f6;
+    }
+    
+    .form-group input[type="text"],
+    .form-group input[type="number"] {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        background: #f8fafc;
+        transition: all 0.2s;
+    }
+    
+    .form-group input:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+    }
+    
+    body.dark-mode .form-group input[type="file"],
+    body.dark-mode .form-group input[type="text"],
+    body.dark-mode .form-group input[type="number"] {
+        background: #334155;
+        border-color: #475569;
+        color: #f8fafc;
+    }
+    
+    .help-text {
+        font-size: 12px;
+        color: #64748b;
+        margin-top: 8px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    body.dark-mode .help-text {
+        color: #94a3b8;
+    }
+    
+    .help-text a {
+        color: #3b82f6;
+        text-decoration: none;
+    }
+    
+    .help-text a:hover {
+        text-decoration: underline;
+    }
+    
+    .checkbox-group {
         display: flex;
         align-items: center;
         gap: 10px;
     }
-    .form-group {
-        margin-bottom: 20px;
+    
+    .checkbox-group input {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
     }
-    .form-group label {
-        display: block;
-        font-weight: 600;
-        margin-bottom: 8px;
+    
+    .checkbox-group label {
+        margin-bottom: 0;
+        cursor: pointer;
     }
-    .form-group input[type="file"] {
-        display: block;
-        width: 100%;
-        padding: 10px;
-        border: 1px solid #e2e8f0;
-        border-radius: 8px;
-        background: #f8fafc;
-    }
-    body.dark-mode .form-group input[type="file"] {
-        background: #334155;
-        border-color: #475569;
-        color: white;
-    }
-    .help-text {
-        font-size: 12px;
-        color: #64748b;
-        margin-top: 5px;
-    }
+    
     .submit-row {
         margin-top: 30px;
         display: flex;
         gap: 15px;
         align-items: center;
+        flex-wrap: wrap;
     }
-    .button {
-        background: #3b82f6;
-        color: white;
+    
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
         padding: 10px 24px;
         border: none;
-        border-radius: 8px;
+        border-radius: 10px;
         cursor: pointer;
         font-weight: 600;
-        transition: background 0.2s;
+        transition: all 0.2s;
+        text-decoration: none;
+        font-size: 14px;
     }
-    .button:hover {
+    
+    .btn-primary {
+        background: #3b82f6;
+        color: white;
+    }
+    
+    .btn-primary:hover {
         background: #2563eb;
+        transform: translateY(-1px);
     }
-    .button-cancel {
+    
+    .btn-secondary {
         background: #64748b;
+        color: white;
     }
-    .button-cancel:hover {
+    
+    .btn-secondary:hover {
         background: #475569;
+        transform: translateY(-1px);
     }
+    
     .result-box {
         margin-top: 30px;
-        padding: 15px;
-        border-radius: 8px;
+        padding: 20px;
+        border-radius: 12px;
         background: #f8fafc;
         border: 1px solid #e2e8f0;
     }
+    
     body.dark-mode .result-box {
         background: #334155;
         border-color: #475569;
     }
+    
+    .result-box h3 {
+        font-size: 18px;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .result-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .stat-card-result {
+        background: white;
+        padding: 15px;
+        border-radius: 12px;
+        text-align: center;
+        border: 1px solid #eef2f6;
+    }
+    
+    body.dark-mode .stat-card-result {
+        background: #1e293b;
+        border-color: #334155;
+    }
+    
+    .stat-value-result {
+        font-size: 28px;
+        font-weight: bold;
+    }
+    
+    .stat-label-result {
+        font-size: 14px;
+        color: #64748d;
+        margin-top: 5px;
+    }
+    
     .result-success { color: #10b981; }
-    .result-error { color: #ef4444; }
     .result-warning { color: #f59e0b; }
+    .result-error { color: #ef4444; }
+    
+    .change-log {
+        max-height: 400px;
+        overflow-y: auto;
+        background: #ffffff;
+        padding: 15px;
+        border-radius: 10px;
+        font-family: monospace;
+        font-size: 12px;
+        margin-top: 15px;
+        border: 1px solid #e2e8f0;
+    }
+    
+    body.dark-mode .change-log {
+        background: #1e293b;
+        border-color: #475569;
+    }
+    
+    .change-log ul {
+        list-style: none;
+        padding-left: 0;
+        margin: 0;
+    }
+    
+    .change-log li {
+        padding: 8px 0;
+        border-bottom: 1px solid #eef2f6;
+        white-space: pre-wrap;
+        word-break: break-all;
+    }
+    
+    body.dark-mode .change-log li {
+        border-bottom-color: #334155;
+    }
+    
+    .change-log li:last-child {
+        border-bottom: none;
+    }
+    
+    .error-list {
+        max-height: 200px;
+        overflow-y: auto;
+        background: #fef2f2;
+        padding: 15px;
+        border-radius: 10px;
+        margin-top: 15px;
+        border: 1px solid #fee2e2;
+    }
+    
+    body.dark-mode .error-list {
+        background: #2a1a1a;
+        border-color: #991b1b;
+    }
+    
+    .error-list li {
+        color: #dc2626;
+    }
+    
+    body.dark-mode .error-list li {
+        color: #f87171;
+    }
+    
+    .progress-bar {
+        margin-top: 20px;
+        display: none;
+    }
+    
+    .progress-bar.active {
+        display: block;
+    }
+    
+    .progress {
+        height: 8px;
+        background: #e2e8f0;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    
+    .progress-fill {
+        width: 0%;
+        height: 100%;
+        background: #3b82f6;
+        transition: width 0.3s;
+    }
+    
+    hr {
+        margin: 20px 0;
+        border: none;
+        border-top: 1px solid #eef2f6;
+    }
+    
+    body.dark-mode hr {
+        border-top-color: #334155;
+    }
+    
+    @media (max-width: 768px) {
+        .import-container {
+            padding: 20px;
+            margin: 10px;
+        }
+        
+        .result-stats {
+            grid-template-columns: 1fr;
+        }
+        
+        .submit-row {
+            flex-direction: column;
+        }
+        
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
 </style>
 {% endblock %}
 
@@ -97,56 +347,140 @@
 <div class="import-container">
     <h1><i class="fas fa-upload"></i> Імпорт товарів з Excel</h1>
     
-    <form method="post" enctype="multipart/form-data">
+    <form method="post" enctype="multipart/form-data" id="importForm">
         {% csrf_token %}
         
         <div class="form-group">
-            <label for="excel_file">Excel файл (.xlsx, .xls)</label>
+            <label for="excel_file"><i class="fas fa-file-excel"></i> Excel файл (.xlsx, .xls)</label>
             <input type="file" name="excel_file" id="excel_file" accept=".xlsx,.xls" required>
             <div class="help-text">
                 <i class="fas fa-info-circle"></i> 
-                Файл повинен містити колонки: Article, Name, PriceUSD, CategoryName, Vendor та інші.
-                <a href="/admin/export-template/" style="color: #3b82f6;">Завантажити шаблон</a>
+                Файл повинен містити колонки: Article, Name, RetailPrice, CategoryName, Vendor та інші.
             </div>
         </div>
         
         <div class="form-group">
-            <label for="usd_rate">Курс USD до UAH (залиште порожнім для автоматичного отримання)</label>
-            <input type="number" name="usd_rate" id="usd_rate" step="0.01" placeholder="Автоматично">
+            <label for="usd_rate"><i class="fas fa-dollar-sign"></i> Курс USD до UAH</label>
+            <input type="number" name="usd_rate" id="usd_rate" step="0.01" placeholder="Автоматично (з API НБУ)">
+            <div class="help-text">
+                <i class="fas fa-info-circle"></i> 
+                Залиште порожнім для автоматичного отримання курсу з НБУ
+            </div>
         </div>
         
         <div class="form-group">
-            <label>
-                <input type="checkbox" name="update_existing" value="yes">
-                Оновлювати існуючі товари (за артикулом)
-            </label>
+            <div class="checkbox-group">
+                <input type="checkbox" name="update_existing" value="yes" id="update_existing">
+                <label for="update_existing"><i class="fas fa-sync-alt"></i> Оновлювати існуючі товари (за артикулом)</label>
+            </div>
+            <div class="help-text">
+                <i class="fas fa-info-circle"></i> 
+                Якщо вимкнено, будуть створені тільки нові товари
+            </div>
         </div>
         
         <div class="submit-row">
-            <button type="submit" class="button"><i class="fas fa-upload"></i> Почати імпорт</button>
-            <a href="{% url 'admin:shop_product_changelist' %}" class="button button-cancel"><i class="fas fa-times"></i> Скасувати</a>
+            <button type="submit" class="btn btn-primary" id="submitBtn">
+                <i class="fas fa-upload"></i> Почати імпорт
+            </button>
+            <a href="{% url 'admin:shop_product_changelist' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Назад до списку товарів
+            </a>
+        </div>
+        
+        <div class="progress-bar" id="progressBar">
+            <div class="help-text"><i class="fas fa-spinner fa-pulse"></i> Імпорт триває...</div>
+            <div class="progress">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
         </div>
     </form>
     
     {% if result %}
     <div class="result-box">
-        <h3><i class="fas fa-chart-line"></i> Результат імпорту:</h3>
-        <ul>
-            <li class="result-success">✅ Створено: {{ result.created|default:"0" }}</li>
-            <li class="result-warning">🔄 Оновлено: {{ result.updated|default:"0" }}</li>
-            <li class="result-error">❌ Помилок: {{ result.errors|default:"0" }}</li>
-        </ul>
-        {% if result.error_list %}
-        <h4>Деталі помилок:</h4>
-        <ul class="result-error">
-            {% for error in result.error_list %}
-            <li>{{ error }}</li>
-            {% endfor %}
-        </ul>
+        <h3><i class="fas fa-chart-line"></i> Результат імпорту</h3>
+        
+        <div class="result-stats">
+            <div class="stat-card-result">
+                <div class="stat-value-result result-success">{{ result.created|default:"0" }}</div>
+                <div class="stat-label-result">✅ Створено</div>
+            </div>
+            <div class="stat-card-result">
+                <div class="stat-value-result result-warning">{{ result.updated|default:"0" }}</div>
+                <div class="stat-label-result">🔄 Оновлено</div>
+            </div>
+            <div class="stat-card-result">
+                <div class="stat-value-result result-error">{{ result.errors|default:"0" }}</div>
+                <div class="stat-label-result">❌ Помилок</div>
+            </div>
+            {% if result.price_changes %}
+            <div class="stat-card-result">
+                <div class="stat-value-result">{{ result.price_changes|default:"0" }}</div>
+                <div class="stat-label-result">💰 Змін цін</div>
+                <div class="help-text">
+                    {% if result.price_increases %}📈 +{{ result.price_increases }}{% endif %}
+                    {% if result.price_decreases %} 📉 -{{ result.price_decreases }}{% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        {% if result.change_log %}
+        <h4><i class="fas fa-list-ul"></i> Детальні зміни:</h4>
+        <div class="change-log">
+            <ul>
+                {% for change in result.change_log %}
+                <li>{{ change|safe }}</li>
+                {% endfor %}
+            </ul>
+        </div>
         {% endif %}
+        
+        {% if result.error_list %}
+        <h4><i class="fas fa-exclamation-triangle"></i> Помилки:</h4>
+        <div class="error-list">
+            <ul>
+                {% for error in result.error_list %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        
         <hr>
-        <a href="{% url 'admin:shop_product_changelist' %}" class="button">Перейти до списку товарів</a>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <a href="{% url 'admin:shop_product_changelist' %}" class="btn btn-primary">
+                <i class="fas fa-boxes"></i> Перейти до списку товарів
+            </a>
+            <a href="/admin/import-products/" class="btn btn-secondary">
+                <i class="fas fa-upload"></i> Новий імпорт
+            </a>
+        </div>
     </div>
     {% endif %}
 </div>
+
+<script>
+    document.getElementById('importForm')?.addEventListener('submit', function() {
+        const submitBtn = document.getElementById('submitBtn');
+        const progressBar = document.getElementById('progressBar');
+        
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Імпорт триває...';
+        progressBar.classList.add('active');
+        
+        let width = 0;
+        const interval = setInterval(function() {
+            if (width < 90) {
+                width += 10;
+                document.getElementById('progressFill').style.width = width + '%';
+            }
+        }, 500);
+        
+        setTimeout(function() {
+            clearInterval(interval);
+            document.getElementById('progressFill').style.width = '100%';
+        }, 5000);
+    });
+</script>
 {% endblock %}

@@ -41,9 +41,19 @@
 
             <h1 class="mb-3 fs-2">{{ product.title }}</h1>
 
+            <!-- Код товару та артикул -->
+            {% if product.code or product.article %}
+            <div class="mb-2 text-muted small">
+                {% if product.code %}Код: {{ product.code }}{% endif %}
+                {% if product.code and product.article %} | {% endif %}
+                {% if product.article %}Артикул: {{ product.article }}{% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Рейтинг -->
             <div class="mb-3">
                 {% for i in "12345"|make_list %}
-                    {% if forloop.counter <= product.rating %}
+                    {% if forloop.counter <= avg_rating|default:product.rating %}
                         <i class="fas fa-star text-warning"></i>
                     {% else %}
                         <i class="far fa-star text-warning"></i>
@@ -52,16 +62,18 @@
                 <span class="text-muted ms-2">({{ product.reviews_count }} відгуків)</span>
             </div>
 
+            <!-- ЦІНА (заокруглена до цілого) -->
             <div class="mb-4">
                 {% if product.old_price %}
-                <span class="text-decoration-line-through text-muted fs-5">{{ product.price }}₴</span>
-                <span class="text-danger fs-1 fw-bold ms-2">{{ product.old_price }}₴</span>
+                <span class="text-decoration-line-through text-muted fs-5">{{ product.price|floatformat:0 }}₴</span>
+                <span class="text-danger fs-1 fw-bold ms-2">{{ product.old_price|floatformat:0 }}₴</span>
                 <span class="badge bg-danger ms-2 fs-6">-{{ product.discount }}%</span>
                 {% else %}
-                <span class="fs-1 fw-bold text-primary">{{ product.price }}₴</span>
+                <span class="fs-1 fw-bold text-primary">{{ product.price|floatformat:0 }}₴</span>
                 {% endif %}
             </div>
 
+            <!-- Статус -->
             <div class="mb-4">
                 {% if product.is_available %}
                 <span class="badge bg-success fs-6 p-2"><i class="fas fa-check-circle"></i> В наявності ({{ product.quantity }} шт.)</span>
@@ -77,12 +89,21 @@
                         <span class="badge bg-warning text-dark fs-6 p-2 ms-2"><i class="fas fa-fire"></i> Хіт продажів</span>
                     {% endif %}
                 {% endwith %}
+                
+                {% if product.warranty %}
+                <span class="badge bg-secondary fs-6 p-2 ms-2"><i class="fas fa-shield-alt"></i> Гарантія {{ product.warranty }} міс.</span>
+                {% endif %}
             </div>
 
+            <!-- Короткий опис -->
+            {% if product.description %}
             <div class="mb-4">
-                <p>{{ product.description|truncatewords:40 }}</p>
+                <h5>Короткий опис</h5>
+                <p>{{ product.description|linebreaks }}</p>
             </div>
+            {% endif %}
 
+            <!-- Форма додавання в кошик -->
             <div class="card bg-light mb-4">
                 <div class="card-body">
                     <form action="{% url 'cart:cart_add' product.id %}" method="post">
@@ -102,31 +123,143 @@
                 </div>
             </div>
 
-            {% if product.attributes or product.property_values.all %}
+            <!-- Короткі характеристики (бренд, країна) -->
+            <div class="mb-4">
+                <div class="row g-3">
+                    {% if product.brand %}
+                    <div class="col-6">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-trademark text-muted me-2"></i>
+                            <div>
+                                <small class="text-muted d-block">Бренд</small>
+                                <strong>{{ product.brand.name }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if product.country %}
+                    <div class="col-6">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-globe text-muted me-2"></i>
+                            <div>
+                                <small class="text-muted d-block">Країна виробництва</small>
+                                <strong>{{ product.country }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ПОВНИЙ ОПИС -->
+    {% if product.full_description %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-align-left"></i> Повний опис</h5>
+                </div>
+                <div class="card-body">
+                    {{ product.full_description|linebreaks }}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ВСІ ХАРАКТЕРИСТИКИ -->
+    {% if product.attributes or product.property_values.all %}
+    <div class="row mt-4">
+        <div class="col-12">
             <div class="card">
                 <div class="card-header bg-white">
                     <h5 class="mb-0"><i class="fas fa-list-ul"></i> Характеристики</h5>
                 </div>
-                <div class="card-body p-0">
-                    <table class="table table-sm table-borderless mb-0 specs-table">
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Характеристики з JSON поля attributes -->
                         {% if product.attributes %}
-                            {% for key, value in product.attributes.items %}
-                            <tr>
-                                <td class="ps-3">{{ key }}:</td>
-                                <td class="pe-3">{{ value }}</td>
-                            </tr>
-                            {% endfor %}
+                        <div class="col-md-6">
+                            <table class="table table-sm table-borderless specs-table">
+                                {% for key, value in product.attributes.items %}
+                                <tr>
+                                    <td class="ps-0" style="width: 45%; font-weight: 600;">{{ key }}:</td>
+                                    <td class="pe-0">{{ value }}</td>
+                                </tr>
+                                {% endfor %}
+                            </table>
+                        </div>
                         {% endif %}
-                        {% for pv in product.property_values.all %}
-                            <tr>
-                                <td class="ps-3">{{ pv.property.name }}:</td>
-                                <td class="pe-3">{{ pv.value }}</td>
-                            </tr>
-                        {% endfor %}
-                    </table>
+                        
+                        <!-- Характеристики з моделі PropertyValue -->
+                        {% if product.property_values.all %}
+                        <div class="{% if product.attributes %}col-md-6{% else %}col-12{% endif %}">
+                            <table class="table table-sm table-borderless specs-table">
+                                {% for pv in product.property_values.all %}
+                                <tr>
+                                    <td class="ps-0" style="width: 45%; font-weight: 600;">{{ pv.property.name }}:</td>
+                                    <td class="pe-0">{{ pv.value }}</td>
+                                </tr>
+                                {% endfor %}
+                            </table>
+                        </div>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
-            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ДОДАТКОВА ІНФОРМАЦІЯ -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> Додаткова інформація</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        {% if product.warranty %}
+                        <div class="col-md-4">
+                            <div class="text-center p-3 border rounded">
+                                <i class="fas fa-shield-alt fa-2x text-primary mb-2"></i>
+                                <h6>Гарантія</h6>
+                                <p class="mb-0">{{ product.warranty }} місяців</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if product.quantity %}
+                        <div class="col-md-4">
+                            <div class="text-center p-3 border rounded">
+                                <i class="fas fa-boxes fa-2x text-primary mb-2"></i>
+                                <h6>Наявність на складі</h6>
+                                <p class="mb-0">{{ product.quantity }} шт.</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="col-md-4">
+                            <div class="text-center p-3 border rounded">
+                                <i class="fas fa-truck fa-2x text-primary mb-2"></i>
+                                <h6>Доставка</h6>
+                                <p class="mb-0">Нова Пошта, Укрпошта, Кур'єром</p>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="text-center p-3 border rounded">
+                                <i class="fas fa-credit-card fa-2x text-primary mb-2"></i>
+                                <h6>Оплата</h6>
+                                <p class="mb-0">Карткою онлайн, Приват24, Готівкою</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -154,7 +287,7 @@
                                 {{ related.title|truncatechars:40 }}
                             </a>
                             <div class="product-card-category">{{ related.category.name }}</div>
-                            <div class="product-card-price">{{ related.price }}₴</div>
+                            <div class="product-card-price">{{ related.price|floatformat:0 }}₴</div>
                         </div>
                     </div>
                 </div>
@@ -229,8 +362,43 @@
             {% endif %}
         </div>
     </div>
+
+    <!-- Нещодавно переглянуті товари -->
+    {% if recently_viewed %}
+    <div class="row mt-5">
+        <div class="col-12">
+            <hr class="my-4">
+            <h3 class="mb-4"><i class="fas fa-history"></i> Ви переглядали</h3>
+            <div class="row g-4">
+                {% for viewed_product in recently_viewed %}
+                <div class="col-6 col-md-3">
+                    <div class="product-card">
+                        <div class="product-card-img">
+                            {% if viewed_product.main_image %}
+                            <img src="{{ viewed_product.main_image.url }}" alt="{{ viewed_product.title }}">
+                            {% else %}
+                            <div class="bg-light text-center py-4">
+                                <i class="fas fa-image fa-2x text-muted"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="product-card-body">
+                            <a href="{{ viewed_product.get_absolute_url }}" class="product-card-title">
+                                {{ viewed_product.title|truncatechars:40 }}
+                            </a>
+                            <div class="product-card-category">{{ viewed_product.category.name }}</div>
+                            <div class="product-card-price">{{ viewed_product.price|floatformat:0 }}₴</div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
 </div>
 
+<!-- Lightbox -->
 <div id="lightbox" class="lightbox">
     <span class="lightbox-close">&times;</span>
     <img id="lightboxImg" src="">

@@ -214,3 +214,261 @@ body.dark-mode .recent-orders th {
         font-size: 14px;
     }
 }
+
+/* =========================================================
+   СТИЛІ ДЛЯ СТОРІНКИ ПРАЙС-ЛИСТА
+   ========================================================= */
+
+.pricelist-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.pricelist-card {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    border: 1px solid #eef2f6;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+body.dark-mode .pricelist-card {
+    background: #1e293b;
+    border-color: #334155;
+}
+
+.pricelist-card h2 {
+    font-size: 20px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #1e293b;
+    border-bottom: 2px solid #eef2f6;
+    padding-bottom: 12px;
+}
+
+body.dark-mode .pricelist-card h2 {
+    color: #f8fafc;
+    border-bottom-color: #334155;
+}
+
+.pricelist-form-row {
+    margin-bottom: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 15px;
+}
+
+.pricelist-form-row label {
+    width: 160px;
+    font-weight: 600;
+    color: #475569;
+}
+
+body.dark-mode .pricelist-form-row label {
+    color: #94a3b8;
+}
+
+.pricelist-form-row input,
+.pricelist-form-row select {
+    flex: 1;
+    min-width: 200px;
+    padding: 10px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #1e293b;
+    transition: all 0.2s;
+}
+
+body.dark-mode .pricelist-form-row input,
+body.dark-mode .pricelist-form-row select {
+    background: #334155;
+    border-color: #475569;
+    color: #f8fafc;
+}
+
+.pricelist-form-row input:focus,
+.pricelist-form-row select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+}
+
+.pricelist-buttons {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #eef2f6;
+}
+
+body.dark-mode .pricelist-buttons {
+    border-top-color: #334155;
+}
+
+.btn-pricelist {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s;
+    cursor: pointer;
+    border: none;
+    font-size: 14px;
+}
+
+.btn-pricelist-primary {
+    background: #3b82f6;
+    color: white;
+}
+
+.btn-pricelist-primary:hover {
+    background: #2563eb;
+    transform: translateY(-2px);
+}
+
+.btn-pricelist-success {
+    background: #10b981;
+    color: white;
+}
+
+.btn-pricelist-success:hover {
+    background: #059669;
+    transform: translateY(-2px);
+}
+
+.btn-pricelist-secondary {
+    background: #64748b;
+    color: white;
+}
+
+.btn-pricelist-secondary:hover {
+    background: #475569;
+    transform: translateY(-2px);
+}
+
+/* Результат */
+.pricelist-result {
+    background: #f0fdf4;
+    border-left: 4px solid #10b981;
+    padding: 16px 20px;
+    border-radius: 12px;
+    margin-top: 20px;
+}
+
+body.dark-mode .pricelist-result {
+    background: #0f2a1f;
+    border-left-color: #10b981;
+}
+
+.pricelist-result h3 {
+    font-size: 16px;
+    margin-bottom: 10px;
+    color: #065f46;
+}
+
+body.dark-mode .pricelist-result h3 {
+    color: #34d399;
+}
+
+.pricelist-result a {
+    color: #059669;
+    word-break: break-all;
+}
+
+.pricelist-result a:hover {
+    color: #047857;
+}
+
+.pricelist-error {
+    background: #fef2f2;
+    border-left: 4px solid #ef4444;
+    padding: 16px 20px;
+    border-radius: 12px;
+    margin-top: 20px;
+    color: #b91c1c;
+}
+
+/* Інформаційна панель */
+.pricelist-info {
+    background: #eff6ff;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+body.dark-mode .pricelist-info {
+    background: #1e3a5f;
+}
+
+.pricelist-info-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #1e40af;
+}
+
+body.dark-mode .pricelist-info-item {
+    color: #93c5fd;
+}
+
+.pricelist-info-item i {
+    font-size: 20px;
+}
+
+/* Сповіщення */
+.messagelist .success {
+    background: #d1fae5;
+    color: #065f46;
+    border-radius: 10px;
+    padding: 12px 16px;
+}
+
+.messagelist .error {
+    background: #fee2e2;
+    color: #991b1b;
+    border-radius: 10px;
+    padding: 12px 16px;
+}
+
+/* Адаптивність для сторінки прайс-листа */
+@media (max-width: 768px) {
+    .pricelist-form-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .pricelist-form-row label {
+        width: 100%;
+    }
+    
+    .pricelist-form-row input,
+    .pricelist-form-row select {
+        width: 100%;
+    }
+    
+    .pricelist-buttons {
+        flex-direction: column;
+    }
+    
+    .btn-pricelist {
+        justify-content: center;
+    }
+    
+    .pricelist-info {
+        flex-direction: column;
+        gap: 10px;
+    }
+}

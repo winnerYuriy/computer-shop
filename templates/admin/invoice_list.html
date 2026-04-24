@@ -1,0 +1,279 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}Список рахунків-фактур{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    .invoice-container {
+        max-width: 1400px;
+        margin: 20px auto;
+        background: white;
+        border-radius: 16px;
+        padding: 25px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        border: 1px solid #eef2f6;
+    }
+    
+    .invoice-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+    
+    .invoice-header h1 {
+        font-size: 24px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .btn-new {
+        background: #10b981;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .filter-bar {
+        background: #f8fafc;
+        padding: 15px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        align-items: flex-end;
+    }
+    
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .filter-group label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #64748b;
+    }
+    
+    .filter-group input, .filter-group select {
+        padding: 8px 12px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        min-width: 150px;
+    }
+    
+    .btn-filter {
+        background: #3b82f6;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+    
+    .btn-reset {
+        background: #64748b;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+    
+    .invoice-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .invoice-table th, .invoice-table td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #eef2f6;
+    }
+    
+    .invoice-table th {
+        background: #f8fafc;
+        font-weight: 600;
+        color: #1e293b;
+    }
+    
+    .invoice-table tr:hover {
+        background: #f8fafc;
+    }
+    
+    .status-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    
+    .status-paid { background: #d1fae5; color: #065f46; }
+    .status-unpaid { background: #fee2e2; color: #991b1b; }
+    .status-partial { background: #fef3c7; color: #92400e; }
+    .status-overdue { background: #fecaca; color: #b91c1c; }
+    
+    .btn-sm {
+        padding: 4px 10px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 12px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .btn-pdf { background: #ef4444; color: white; }
+    .btn-view { background: #3b82f6; color: white; }
+    
+    .pagination {
+        margin-top: 20px;
+        display: flex;
+        justify-content: center;
+        gap: 5px;
+    }
+    
+    .pagination a, .pagination span {
+        padding: 8px 12px;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        text-decoration: none;
+        color: #1e293b;
+    }
+    
+    .pagination .current {
+        background: #3b82f6;
+        color: white;
+        border-color: #3b82f6;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="invoice-container">
+    <div class="invoice-header">
+        <h1><i class="fas fa-file-invoice"></i> Рахунки-фактури</h1>
+        <a href="{% url 'invoice_form' %}" class="btn-new">
+            <i class="fas fa-plus"></i> Новий рахунок
+        </a>
+    </div>
+    
+    <!-- Фільтри -->
+    <form method="get" class="filter-bar">
+        <div class="filter-group">
+            <label>№ рахунку</label>
+            <input type="text" name="invoice_number" value="{{ request.GET.invoice_number|default:'' }}" placeholder="Пошук за номером">
+        </div>
+        <div class="filter-group">
+            <label>Юридична особа</label>
+            <select name="legal_entity">
+                <option value="">Всі</option>
+                {% for entity in legal_entities %}
+                <option value="{{ entity.id }}" {% if request.GET.legal_entity == entity.id|stringformat:"s" %}selected{% endif %}>{{ entity.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>Статус оплати</label>
+            <select name="payment_status">
+                <option value="">Всі</option>
+                <option value="unpaid" {% if request.GET.payment_status == 'unpaid' %}selected{% endif %}>Не оплачений</option>
+                <option value="partial" {% if request.GET.payment_status == 'partial' %}selected{% endif %}>Частково оплачений</option>
+                <option value="paid" {% if request.GET.payment_status == 'paid' %}selected{% endif %}>Оплачений</option>
+                <option value="overdue" {% if request.GET.payment_status == 'overdue' %}selected{% endif %}>Прострочений</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>Дата від</label>
+            <input type="date" name="date_from" value="{{ request.GET.date_from|default:'' }}">
+        </div>
+        <div class="filter-group">
+            <label>Дата до</label>
+            <input type="date" name="date_to" value="{{ request.GET.date_to|default:'' }}">
+        </div>
+        <div class="filter-group">
+            <button type="submit" class="btn-filter"><i class="fas fa-search"></i> Шукати</button>
+            <a href="{% url 'admin_invoice_list' %}" class="btn-reset"><i class="fas fa-times"></i> Скинути</a>
+        </div>
+    </form>
+    
+    <!-- Таблиця -->
+    <table class="invoice-table">
+        <thead>
+            <tr>
+                <th>№ рахунку</th>
+                <th>Дата</th>
+                <th>Покупець</th>
+                <th>ЄДРПОУ</th>
+                <th>Сума</th>
+                <th>Статус оплати</th>
+                <th>Дії</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for invoice in invoices %}
+            <tr>
+                <td><strong>{{ invoice.invoice_number }}</strong></td>
+                <td>{{ invoice.invoice_date|date:"d.m.Y" }}</td>
+                <td>{{ invoice.legal_entity.name|truncatechars:40 }}</td>
+                <td>{{ invoice.legal_entity.code_edrpou }}</td>
+                <td>{{ invoice.total_amount|floatformat:2 }} ₴</td>
+                <td>
+                    <span class="status-badge status-{{ invoice.payment_status }}">
+                        {{ invoice.get_payment_status_display }}
+                    </span>
+                </td>
+                <td>
+                    <a href="{% url 'print_invoice' invoice.id %}" class="btn-sm btn-pdf" target="_blank">
+                        <i class="fas fa-file-pdf"></i> PDF
+                    </a>
+                    <a href="{% url 'admin:shop_invoice_change' invoice.id %}" class="btn-sm btn-view">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" style="text-align: center; padding: 40px;">
+                    <i class="fas fa-inbox" style="font-size: 48px; color: #cbd5e1;"></i>
+                    <p>Немає рахунків</p>
+                    <a href="{% url 'invoice_form' %}" class="btn-new" style="display: inline-block; margin-top: 10px;">
+                        <i class="fas fa-plus"></i> Створити перший рахунок
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <!-- Пагінація -->
+    {% if invoices.has_other_pages %}
+    <div class="pagination">
+        {% if invoices.has_previous %}
+            <a href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">«</a>
+            <a href="?page={{ invoices.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">‹</a>
+        {% endif %}
+        
+        <span class="current">{{ invoices.number }} / {{ invoices.paginator.num_pages }}</span>
+        
+        {% if invoices.has_next %}
+            <a href="?page={{ invoices.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">›</a>
+            <a href="?page={{ invoices.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">»</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

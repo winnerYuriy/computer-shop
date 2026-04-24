@@ -1,0 +1,12 @@
+{% extends "admin/change_form.html" %}
+
+{% block object-tools-items %}
+    {{ block.super }}
+    {% if original and original.legal_entity and original.invoice_required %}
+    <li>
+        <a href="{% url 'admin_create_invoice_from_order' original.id %}" class="button">
+            <i class="fas fa-file-invoice"></i> Виписати рахунок
+        </a>
+    </li>
+    {% endif %}
+{% endblock %}

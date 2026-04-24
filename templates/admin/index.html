@@ -34,28 +34,53 @@
         </div>
     </div>
 
-    <!-- Блок імпорту/експорту -->
+    <!-- Блок імпорту/експорту та Brain API -->
     <div class="import-export-module">
-        <h3><i class="fas fa-exchange-alt"></i> Імпорт / Експорт</h3>
+        <h3><i class="fas fa-exchange-alt"></i> Імпорт / Експорт / Інтеграції</h3>
         <div class="import-export-links">
-            <a href="/admin-config/import-products/">
+            <a href="/admin/import-products/">
                 <i class="fas fa-upload"></i> Імпорт товарів з Excel
             </a>
-            <a href="/admin-config/export-products/">
+            <a href="/admin/export-products/">
                 <i class="fas fa-download"></i> Експорт товарів
             </a>
-            <a href="/admin-config/export-template/">
-                <i class="fas fa-file-excel"></i> Завантажити шаблон
+            <a href="/admin/pricelist/">
+                <i class="fas fa-cloud-download-alt"></i> Отримати прайс-лист (Brain API)
             </a>
         </div>
     </div>
 
-    <!-- Блок резервного копіювання -->
+    <!-- Блок завантаження зображень -->
     <div class="import-export-module">
-        <h3><i class="fas fa-database"></i> Резервне копіювання</h3>
+        <h3><i class="fas fa-images"></i> Робота із зображеннями</h3>
         <div class="import-export-links">
-            <a href="{% url 'backup:dashboard' %}">
-                <i class="fas fa-database"></i> Керування бекапами
+            <a href="{% url 'admin_download_missing_images' %}">
+                <i class="fas fa-download"></i> Завантажити зображення для товарів без фото
+            </a>
+            <a href="/admin/shop/product/">
+                <i class="fas fa-edit"></i> Керувати товарами
+            </a>
+        </div>
+    </div>
+
+    <!-- Блок фінансових документів (оновлений) -->
+    <div class="import-export-module">
+        <h3><i class="fas fa-file-invoice-dollar"></i> Фінансові документи</h3>
+        <div class="import-export-links">
+            <a href="{% url 'invoice_form' %}">
+                <i class="fas fa-file-invoice"></i> 📄 Виписка рахунку (1С)
+            </a>
+            <a href="{% url 'admin_invoice_list' %}">
+                <i class="fas fa-list"></i> Список рахунків
+            </a>
+            <a href="/admin/shop/legalentity/">
+                <i class="fas fa-building"></i> Юридичні особи
+            </a>
+            <a href="/admin/shop/service/">
+                <i class="fas fa-tools"></i> Послуги та комплектуючі
+            </a>
+            <a href="/admin/shop/servicecategory/">
+                <i class="fas fa-folder-tree"></i> Категорії послуг
             </a>
         </div>
     </div>
@@ -63,7 +88,7 @@
     <!-- Останні замовлення -->
     <div class="recent-orders">
         <h3><i class="fas fa-clock"></i> Останні замовлення</h3>
-        <table>
+        <table class="table">
             <thead>
                 <tr>
                     <th>ID</th>
@@ -88,11 +113,57 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="5" style="text-align: center;">Немає замовлень</td>
+                    <td colspan="5" style="text-align: center;">Немає замовлень</a></td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
+    </div>
+
+    <!-- Останні рахунки -->
+    <div class="recent-orders" style="margin-top: 20px;">
+        <h3><i class="fas fa-file-invoice"></i> Останні рахунки-фактури</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>№ рахунку</th>
+                    <th>Юридична особа</th>
+                    <th>Сума</th>
+                    <th>Статус оплати</th>
+                    <th>Дата</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for invoice in recent_invoices %}
+                <tr>
+                    <td><strong>{{ invoice.invoice_number }}</strong></td>
+                    <td>{{ invoice.legal_entity.name|truncatechars:50 }}</a></td>
+                    <td>{{ invoice.total_amount }}₴</a></td>
+                    <td>
+                        <span class="badge badge-{{ invoice.payment_status }}">
+                            {{ invoice.get_payment_status_display }}
+                        </span>
+                    </td>
+                    <td>{{ invoice.invoice_date|date:"d.m.Y" }}</a></td>
+                    <td>
+                        <a href="{% url 'admin_download_invoice' invoice.id %}" class="btn-sm" style="background: #3b82f6; color: white; padding: 4px 8px; border-radius: 6px; text-decoration: none;">
+                            <i class="fas fa-download"></i> PDF
+                        </a>
+                    </a>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center;">Немає рахунків</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div style="margin-top: 15px; text-align: right;">
+            <a href="{% url 'admin_invoice_list' %}" class="btn-sm" style="background: #64748b; color: white; padding: 6px 12px; border-radius: 8px; text-decoration: none;">
+                <i class="fas fa-list"></i> Всі рахунки
+            </a>
+        </div>
     </div>
 </div>
 {{ block.super }}

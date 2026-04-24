@@ -1,24 +1,320 @@
+<!-- templates/admin/confirm_download_images.html -->
 {% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block extrahead %}
+{{ block.super }}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    .confirm-container {
+        max-width: 700px;
+        margin: 40px auto;
+        background: white;
+        border-radius: 20px;
+        padding: 35px;
+        box-shadow: 0 20px 35px -10px rgba(0,0,0,0.1);
+        border: 1px solid #eef2f6;
+        text-align: center;
+    }
+    
+    body.dark-mode .confirm-container {
+        background: #1e293b;
+        border-color: #334155;
+    }
+    
+    .warning-icon {
+        font-size: 70px;
+        color: #f59e0b;
+        margin-bottom: 20px;
+    }
+    
+    .confirm-container h1 {
+        font-size: 28px;
+        margin-bottom: 20px;
+        color: #1e293b;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+    }
+    
+    body.dark-mode .confirm-container h1 {
+        color: #f8fafc;
+    }
+    
+    .info-box {
+        background: #eff6ff;
+        border-radius: 16px;
+        padding: 20px;
+        margin: 20px 0;
+        text-align: left;
+        border-left: 4px solid #3b82f6;
+    }
+    
+    body.dark-mode .info-box {
+        background: #1e3a5f;
+        border-left-color: #3b82f6;
+    }
+    
+    .info-box p {
+        margin: 8px 0;
+        color: #1e40af;
+    }
+    
+    body.dark-mode .info-box p {
+        color: #93c5fd;
+    }
+    
+    .stats-card {
+        background: #f8fafc;
+        border-radius: 16px;
+        padding: 25px;
+        margin: 20px 0;
+        text-align: center;
+        border: 1px solid #e2e8f0;
+    }
+    
+    body.dark-mode .stats-card {
+        background: #334155;
+        border-color: #475569;
+    }
+    
+    .stats-number {
+        font-size: 48px;
+        font-weight: 800;
+        color: #3b82f6;
+    }
+    
+    .stats-label {
+        font-size: 16px;
+        color: #64748b;
+        margin-top: 8px;
+    }
+    
+    body.dark-mode .stats-label {
+        color: #94a3b8;
+    }
+    
+    .warning-box {
+        background: #fef3c7;
+        border-radius: 12px;
+        padding: 15px;
+        margin: 20px 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        border-left: 4px solid #f59e0b;
+    }
+    
+    body.dark-mode .warning-box {
+        background: #422b1a;
+        border-left-color: #f59e0b;
+    }
+    
+    .warning-box i {
+        font-size: 24px;
+        color: #f59e0b;
+    }
+    
+    .warning-box p {
+        margin: 0;
+        color: #92400e;
+        font-size: 14px;
+    }
+    
+    body.dark-mode .warning-box p {
+        color: #fcd34d;
+    }
+    
+    .button-group {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-top: 30px;
+        flex-wrap: wrap;
+    }
+    
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 28px;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.2s;
+        text-decoration: none;
+        font-size: 14px;
+    }
+    
+    .btn-success {
+        background: #10b981;
+        color: white;
+    }
+    
+    .btn-success:hover {
+        background: #059669;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(16,185,129,0.3);
+    }
+    
+    .btn-secondary {
+        background: #64748b;
+        color: white;
+    }
+    
+    .btn-secondary:hover {
+        background: #475569;
+        transform: translateY(-2px);
+    }
+    
+    .progress-bar {
+        margin-top: 25px;
+        display: none;
+    }
+    
+    .progress-bar.active {
+        display: block;
+    }
+    
+    .progress {
+        height: 8px;
+        background: #e2e8f0;
+        border-radius: 4px;
+        overflow: hidden;
+        margin-top: 10px;
+    }
+    
+    .progress-fill {
+        width: 0%;
+        height: 100%;
+        background: #10b981;
+        transition: width 0.3s;
+    }
+    
+    hr {
+        margin: 25px 0;
+        border: none;
+        border-top: 1px solid #eef2f6;
+    }
+    
+    body.dark-mode hr {
+        border-top-color: #334155;
+    }
+    
+    @media (max-width: 768px) {
+        .confirm-container {
+            margin: 20px;
+            padding: 25px;
+        }
+        
+        .stats-number {
+            font-size: 36px;
+        }
+        
+        .button-group {
+            flex-direction: column;
+        }
+        
+        .btn {
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="container" style="max-width: 600px; margin: 50px auto;">
-    <div class="card">
-        <div class="card-header">
-            <h2>📸 Завантаження зображень для товарів</h2>
-        </div>
-        <div class="card-body">
-            <p>Знайдено <strong>{{ products_count }}</strong> товарів без головного зображення.</p>
-            <p>Зображення будуть завантажені через API зовнішнього сервера.</p>
-            <p>Час завантаження залежить від кількості товарів та швидкості з'єднання.</p>
-            
-            <form method="post">
-                {% csrf_token %}
-                <div style="margin-top: 20px;">
-                    <button type="submit" class="button" style="background: #28a745;">✅ Так, завантажити</button>
-                    <a href="{% url 'admin:shop_product_changelist' %}" class="button" style="background: #6c757d;">❌ Скасувати</a>
-                </div>
-            </form>
+<div class="confirm-container">
+    <div class="warning-icon">
+        <i class="fas fa-download"></i>
+    </div>
+    
+    <h1>
+        <i class="fas fa-cloud-download-alt"></i>
+        Завантаження зображень
+    </h1>
+    
+    <div class="info-box">
+        <p><i class="fas fa-info-circle"></i> <strong>Інформація</strong></p>
+        <p>Зображення будуть завантажені з Brain API за кодом товару (code).</p>
+        <p>Завантажені зображення будуть збережені як головні зображення товарів.</p>
+    </div>
+    
+    <div class="stats-card">
+        <div class="stats-number">{{ products_count }}</div>
+        <div class="stats-label">
+            <i class="fas fa-image"></i> товарів без головного зображення
         </div>
     </div>
+    
+    <div class="warning-box">
+        <i class="fas fa-exclamation-triangle"></i>
+        <p>
+            <strong>Увага!</strong> Процес може тривати декілька хвилин залежно від кількості товарів.<br>
+            Будь ласка, не закривайте сторінку до завершення операції.
+        </p>
+    </div>
+    
+    <form method="post" id="downloadForm">
+        {% csrf_token %}
+        <div class="button-group">
+            <button type="submit" class="btn btn-success" id="submitBtn">
+                <i class="fas fa-check-circle"></i> Так, завантажити
+            </button>
+            <a href="{% url 'admin:shop_product_changelist' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Скасувати
+            </a>
+        </div>
+        
+        <div class="progress-bar" id="progressBar">
+            <div class="help-text" style="font-size: 12px; color: #64748b;">
+                <i class="fas fa-spinner fa-pulse"></i> Завантаження триває...
+            </div>
+            <div class="progress">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+    </form>
+    
+    <hr>
+    
+    <div style="font-size: 12px; color: #64748b;">
+        <i class="fas fa-lightbulb"></i> 
+        <strong>Порада:</strong> Якщо деякі товари не отримають зображення, перевірте наявність коду товару (code) 
+        та його відповідність у системі Brain.
+    </div>
 </div>
+
+<script>
+    document.getElementById('downloadForm')?.addEventListener('submit', function() {
+        const submitBtn = document.getElementById('submitBtn');
+        const progressBar = document.getElementById('progressBar');
+        
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Завантаження триває, зачекайте...';
+            progressBar.classList.add('active');
+        }
+        
+        let width = 0;
+        const interval = setInterval(function() {
+            if (width < 90) {
+                width += 10;
+                const progressFill = document.getElementById('progressFill');
+                if (progressFill) {
+                    progressFill.style.width = width + '%';
+                }
+            }
+        }, 800);
+        
+        setTimeout(function() {
+            clearInterval(interval);
+            const progressFill = document.getElementById('progressFill');
+            if (progressFill) {
+                progressFill.style.width = '100%';
+            }
+        }, 8000);
+    });
+</script>
 {% endblock %}

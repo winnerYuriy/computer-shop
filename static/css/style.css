@@ -94,7 +94,7 @@ main {
 
 .product-card-img {
     padding: 1rem;
-    background: #f9fafb;
+    background: #ffffff;
     text-align: center;
     height: 180px;
     display: flex;
@@ -312,7 +312,7 @@ main {
     border-radius: 12px;
     overflow: hidden;
     cursor: pointer;
-    background: #f9fafb;
+    background: #ffffff;
     text-align: center;
     max-height: 350px;
 }

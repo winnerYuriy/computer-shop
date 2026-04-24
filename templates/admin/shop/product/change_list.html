@@ -1,16 +1,11 @@
+<!-- templates/admin/shop/product/change_list.html -->
 {% extends "admin/change_list.html" %}
-{% load static %}
 
-{% block object-tools %}
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-    <div>
-        <a href="{% url 'import_products' %}" class="button" style="background: #10b981; padding: 10px 20px; border-radius: 8px; color: white; text-decoration: none;">
-            <i class="fas fa-upload"></i> Імпорт товарів з Excel
-        </a>
-        <a href="{% url 'export_products' %}" class="button" style="background: #3b82f6; padding: 10px 20px; border-radius: 8px; color: white; text-decoration: none;">
-            <i class="fas fa-download"></i> Експорт товарів
-        </a>
-    </div>
+{% block object-tools-items %}
     {{ block.super }}
-</div>
+    <li>
+        <a href="{% url 'admin_export_products_csv' %}" class="button" style="background: #3b82f6; padding: 10px 20px; border-radius: 8px; color: white; text-decoration: none;">
+            📥 Експорт товарів (CSV)
+        </a>
+    </li>
 {% endblock %}

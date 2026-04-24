@@ -36,8 +36,6 @@ INSTALLED_APPS = [
     'cart',
     'payment',
     'accounts', 
-    'backup', 
-
 ]
 
 MIDDLEWARE = [
@@ -85,6 +83,7 @@ DATABASES = {
         'PORT': os.getenv('DB_PORT', '5432'),
     }
 }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
@@ -146,3 +145,54 @@ CART_SESSION_ID = os.getenv('CART_SESSION_ID','cart')
 LIQPAY_PUBLIC_KEY = os.getenv('LIQPAY_PUBLIC_KEY', '')
 LIQPAY_PRIVATE_KEY = os.getenv('LIQPAY_PRIVATE_KEY', '')
 LIQPAY_SANDBOX = os.getenv('LIQPAY_SANDBOX', 'True') == 'True'
+
+# Налаштування логування
+LOG_DIR = os.path.join(BASE_DIR, 'logs')
+if not os.path.exists(LOG_DIR):
+    os.makedirs(LOG_DIR)
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{asctime} - {levelname} - {module} - {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{asctime} - {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'import_file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(LOG_DIR, 'import_products.log'),
+            'formatter': 'verbose',
+            'encoding': 'utf-8',
+        },
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+        'import_json': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(LOG_DIR, 'import_products_detail.json'),
+            'maxBytes': 10485760,  # 10 MB
+            'backupCount': 5,
+            'formatter': 'verbose',
+            'encoding': 'utf-8',
+        },
+    },
+    'loggers': {
+        'import_logger': {
+            'handlers': ['import_file', 'console', 'import_json'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}
