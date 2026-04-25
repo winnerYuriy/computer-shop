@@ -48,3 +48,6 @@ media/
 
 # Secret keys
 config/settings_local.py
+
+#Backups
+backups/

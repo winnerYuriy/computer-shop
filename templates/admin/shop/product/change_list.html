@@ -1,11 +1,40 @@
-<!-- templates/admin/shop/product/change_list.html -->
-{% extends "admin/change_list.html" %}
+{% extends "admin/base_sidebar.html" %}
+{% load static %}
 
-{% block object-tools-items %}
-    {{ block.super }}
-    <li>
-        <a href="{% url 'admin_export_products_csv' %}" class="button" style="background: #3b82f6; padding: 10px 20px; border-radius: 8px; color: white; text-decoration: none;">
-            📥 Експорт товарів (CSV)
-        </a>
-    </li>
+{% block title %}Товари - TechShop Admin{% endblock %}
+
+{% block content %}
+<div class="data-card">
+    <div class="data-card-header">
+        <h3><i class="fas fa-box"></i> Товари</h3>
+        <a href="add/" class="btn btn-primary"><i class="fas fa-plus"></i> Додати товар</a>
+    </div>
+    
+    <div class="filter-bar">
+        <div class="filter-group"><label>Пошук</label><input type="text" id="search-input" placeholder="Назва, артикул..."></div>
+        <div class="filter-group"><label>Категорія</label><select id="category-filter"><option value="">Всі</option>{% for cat in cl.list_filter %}<option>{{ cat }}</option>{% endfor %}</select></div>
+        <div class="filter-group"><label>Статус</label><select id="status-filter"><option value="">Всі</option><option value="active">Активні</option><option value="inactive">Неактивні</option></select></div>
+        <button class="btn btn-primary" onclick="applyFilters()"><i class="fas fa-search"></i> Шукати</button>
+    </div>
+    
+    <table class="data-table">
+        <thead><tr><th><input type="checkbox" id="select-all"></th><th>Фото</th><th>Назва</th><th>Артикул</th><th>Категорія</th><th>Ціна</th><th>Наявність</th><th>Дії</th></tr></thead>
+        <tbody id="table-body">
+            {% for product in cl.result_list %}
+            <tr>
+                <td><input type="checkbox" class="item-checkbox" value="{{ product.id }}"></td>
+                <td>{% if product.main_image %}<img src="{{ product.main_image.url }}" style="width:40px;height:40px;object-fit:cover;border-radius:6px;">{% else %}<i class="fas fa-image" style="font-size:24px;color:#cbd5e1;"></i>{% endif %}</td>
+                <td><a href="{{ product.id }}/change/" style="font-weight:500;text-decoration:none;color:#1e293b;">{{ product.title|truncatechars:40 }}</a></td>
+                <td>{{ product.article|default:"—" }}</td>
+                <td>{{ product.category.name|default:"—" }}</td>
+                <td><strong>{{ product.price|floatformat:0 }}₴</strong>{% if product.old_price %}<br><span class="badge badge-warning">-{{ product.discount }}%</span>{% endif %}</td>
+                <td>{% if product.available %}<span class="badge badge-success">В наявності</span>{% else %}<span class="badge badge-danger">Немає</span>{% endif %}</td>
+                <td><a href="{{ product.id }}/change/" class="btn btn-primary btn-sm"><i class="fas fa-edit"></i></a><a href="{{ product.id }}/delete/" class="btn btn-danger btn-sm" onclick="return confirm('Видалити?')"><i class="fas fa-trash"></i></a></td>
+            </tr>
+            {% empty %}<tr><td colspan="8" style="text-align:center;">Немає товарів</td></tr>{% endfor %}
+        </tbody>
+    </table>
+    {% if cl.paginator.num_pages > 1 %}<div class="pagination">{% if cl.page_num > 1 %}<a href="?page={{ cl.page_num|add:-1 }}">‹ Попередня</a>{% endif %}<span class="current">{{ cl.page_num }} / {{ cl.paginator.num_pages }}</span>{% if cl.page_num < cl.paginator.num_pages %}<a href="?page={{ cl.page_num|add:1 }}">Наступна ›</a>{% endif %}</div>{% endif %}
+</div>
+<script>document.getElementById('select-all')?.addEventListener('click',function(e){document.querySelectorAll('.item-checkbox').forEach(cb=>cb.checked=e.target.checked);});</script>
 {% endblock %}

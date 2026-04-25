@@ -62,14 +62,14 @@
                 <span class="text-muted ms-2">({{ product.reviews_count }} відгуків)</span>
             </div>
 
-            <!-- ЦІНА (заокруглена до цілого) -->
-            <div class="mb-4">
+            <!-- ЦІНА (покращена версія) -->
+            <div class="mb-4 product-price-wrapper">
                 {% if product.old_price %}
-                <span class="text-decoration-line-through text-muted fs-5">{{ product.price|floatformat:0 }}₴</span>
-                <span class="text-danger fs-1 fw-bold ms-2">{{ product.old_price|floatformat:0 }}₴</span>
-                <span class="badge bg-danger ms-2 fs-6">-{{ product.discount }}%</span>
+                    <del class="old-price">{{ product.price|floatformat:0 }}<span class="currency">₴</span></del>
+                    <ins class="current-price">{{ product.old_price|floatformat:0 }}<span class="currency">₴</span></ins>
+                    <span class="discount-badge">-{{ product.discount }}%</span>
                 {% else %}
-                <span class="fs-1 fw-bold text-primary">{{ product.price|floatformat:0 }}₴</span>
+                    <ins class="current-price">{{ product.price|floatformat:0 }}<span class="currency">₴</span></ins>
                 {% endif %}
             </div>
 
@@ -287,7 +287,9 @@
                                 {{ related.title|truncatechars:40 }}
                             </a>
                             <div class="product-card-category">{{ related.category.name }}</div>
-                            <div class="product-card-price">{{ related.price|floatformat:0 }}₴</div>
+                            <div class="product-card-price">
+                                <span class="current-price">{{ related.price|floatformat:0 }}<span class="currency">₴</span></span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -387,7 +389,9 @@
                                 {{ viewed_product.title|truncatechars:40 }}
                             </a>
                             <div class="product-card-category">{{ viewed_product.category.name }}</div>
-                            <div class="product-card-price">{{ viewed_product.price|floatformat:0 }}₴</div>
+                            <div class="product-card-price">
+                                <span class="current-price">{{ viewed_product.price|floatformat:0 }}<span class="currency">₴</span></span>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -381,6 +381,14 @@ class Order(models.Model):
 
     def __str__(self):
         return f'Замовлення #{self.id} - {self.full_name}'
+    
+    def save(self, *args, **kwargs):
+        # Синхронізуємо is_paid зі статусом
+        if self.status == 'paid' and not self.is_paid:
+            self.is_paid = True
+        elif self.status != 'paid' and self.is_paid:
+            self.is_paid = False
+        super().save(*args, **kwargs)
 
 
 # -------------------------------------------------------------------
@@ -580,7 +588,7 @@ class Invoice(models.Model):
     ]
     
     # Номер і дата
-    invoice_number = models.CharField('Номер рахунку', max_length=50, unique=True)
+    invoice_number = models.CharField('Номер рахунку', max_length=20, unique=True)
     invoice_date = models.DateField('Дата виставлення', default=date.today)  # використовуємо date.today
     due_date = models.DateField('Термін оплати', blank=True, null=True)
 
@@ -623,14 +631,15 @@ class Invoice(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.invoice_number:
-            year = date.today().strftime('%Y')  # використовуємо date.today()
-            last_invoice = Invoice.objects.filter(invoice_number__startswith=f'РФ-{year}').order_by('-invoice_number').first()
+            last_invoice = Invoice.objects.order_by('-id').first()
             if last_invoice:
-                last_num = int(last_invoice.invoice_number.split('-')[-1])
-                new_num = last_num + 1
+                new_num = last_invoice.id + 1
             else:
                 new_num = 1
-            self.invoice_number = f"РФ-{year}-{new_num:06d}"
+            
+            # Просто число без форматування
+            self.invoice_number = str(new_num)
+        
         super().save(*args, **kwargs)
 
 
@@ -653,4 +662,29 @@ class InvoiceItem(models.Model):
     
     def __str__(self):
         return f"{self.name} x {self.quantity} = {self.total}₴"
+
     
+class AdminNotification(models.Model):
+    """Сповіщення для адміністраторів"""
+    
+    NOTIFICATION_TYPES = [
+        ('new_order', 'Нове замовлення'),
+        ('new_review', 'Новий відгук'),
+        ('low_stock', 'Товар закінчується'),
+        ('new_user', 'Новий користувач'),
+    ]
+    
+    notification_type = models.CharField('Тип сповіщення', max_length=20, choices=NOTIFICATION_TYPES)
+    title = models.CharField('Заголовок', max_length=200)
+    message = models.TextField('Повідомлення')
+    link = models.CharField('Посилання', max_length=200, blank=True)
+    is_read = models.BooleanField('Прочитано', default=False)
+    created_at = models.DateTimeField('Створено', auto_now_add=True)
+    
+    class Meta:
+        verbose_name = 'Сповіщення'
+        verbose_name_plural = 'Сповіщення'
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.title} - {self.created_at.strftime('%d.%m.%Y %H:%M')}"

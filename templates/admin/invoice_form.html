@@ -1,268 +1,314 @@
-<!-- templates/admin/invoice_form.html -->
-{% extends "admin/base_site.html" %}
+{% extends "admin/base_sidebar.html" %}
 {% load static %}
 
 {% block title %}Виписка рахунку-фактури{% endblock %}
 
 {% block extrahead %}
 {{ block.super }}
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
-
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
 <style>
     .invoice-container {
-        max-width: 1100px;
-        margin: 25px auto;
+        max-width: 1200px;
+        margin: 20px auto;
         background: white;
         border-radius: 16px;
         padding: 30px;
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-        border: 1px solid #e5e7eb;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        border: 1px solid #eef2f6;
     }
-
+    
     .invoice-header {
-        text-align: center;
         margin-bottom: 25px;
         padding: 15px;
-        background: linear-gradient(135deg, #6366f1, #4f46e5);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
         border-radius: 12px;
+        text-align: center;
     }
-
+    
     .form-row {
+        margin-bottom: 20px;
         display: flex;
+        flex-wrap: wrap;
         align-items: center;
-        margin-bottom: 18px;
-        gap: 15px;
     }
-
+    
     .form-row label {
-        width: 160px;
+        width: 150px;
         font-weight: 600;
-        color: #1f2937;
-        flex-shrink: 0;
+        color: #1e293b;
     }
-
-    .form-row input[type="text"],
-    .form-row input[type="date"],
-    .form-row select {
+    
+    .form-row input {
         flex: 1;
-        padding: 10px 12px;
-        border: 1px solid #d1d5db;
+        padding: 10px;
+        border: 1px solid #e2e8f0;
         border-radius: 8px;
-        font-size: 15px;
     }
-
+    
+    .form-row select {
+        padding: 10px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        width: 300px;
+    }
+    
     .items-table {
         width: 100%;
         border-collapse: collapse;
-        margin: 20px 0;
-        background: white;
+        margin: 15px 0;
     }
-
-    .items-table th, 
-    .items-table td {
-        border: 1px solid #e5e7eb;
-        padding: 12px 10px;
+    
+    .items-table th, .items-table td {
+        border: 1px solid #e2e8f0;
+        padding: 10px;
         text-align: left;
+        vertical-align: middle;
     }
-
+    
     .items-table th {
         background: #f8fafc;
         font-weight: 600;
-        color: #374151;
     }
-
+    
     .product-search {
         width: 100%;
-        padding: 10px;
-        border: 1px solid #d1d5db;
-        border-radius: 8px;
+        padding: 8px;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
     }
-
+    
+    .ui-autocomplete {
+        max-height: 300px;
+        overflow-y: auto;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        z-index: 1000;
+    }
+    
+    .ui-menu-item {
+        padding: 10px 12px;
+        cursor: pointer;
+        border-bottom: 1px solid #eef2f6;
+    }
+    
+    .ui-menu-item:hover {
+        background: #eff6ff;
+    }
+    
+    .ui-menu-item .item-name {
+        font-weight: 600;
+        display: block;
+    }
+    
+    .ui-menu-item .item-details {
+        font-size: 11px;
+        color: #64748b;
+        display: flex;
+        gap: 10px;
+        margin-top: 4px;
+    }
+    
     .btn-add {
-        background: #4f46e5;
+        background: #3b82f6;
         color: white;
         border: none;
-        padding: 10px 18px;
+        padding: 8px 16px;
         border-radius: 8px;
         cursor: pointer;
-        font-weight: 500;
-        margin: 10px 0 15px 0;
+        margin-bottom: 15px;
     }
-
+    
     .btn-remove {
         background: #ef4444;
         color: white;
         border: none;
-        padding: 6px 10px;
-        border-radius: 6px;
+        padding: 4px 8px;
+        border-radius: 4px;
         cursor: pointer;
     }
-
+    
     .btn-submit {
         background: #10b981;
         color: white;
-        padding: 14px 24px;
+        padding: 12px 24px;
         border: none;
-        border-radius: 10px;
+        border-radius: 8px;
         font-size: 16px;
-        font-weight: 600;
-        width: 100%;
-        margin-top: 25px;
         cursor: pointer;
-    }
-
-    .totals {
-        background: #f8fafc;
-        padding: 18px;
-        border-radius: 10px;
         margin-top: 20px;
+        width: 100%;
+    }
+    
+    .totals {
+        margin-top: 20px;
+        padding: 15px;
+        background: #f8fafc;
+        border-radius: 8px;
         text-align: right;
-        font-size: 15px;
     }
-
-    .totals p {
-        margin: 8px 0;
+    
+    .price-update {
+        font-weight: bold;
+        color: #10b981;
     }
-
-    .item-type-badge {
-        padding: 3px 9px;
-        border-radius: 9999px;
-        font-size: 11px;
+    
+    .type-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 10px;
         font-weight: 600;
         margin-left: 8px;
     }
-
+    
     .type-product { background: #dbeafe; color: #1e40af; }
-    .type-service { background: #d1fae5; color: #166534; }
+    .type-service { background: #dcfce7; color: #166534; }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="invoice-container">
     <div class="invoice-header">
-        <h1><i class="fas fa-file-invoice-dollar"></i> Виписка рахунку-фактури</h1>
+        <h1><i class="fas fa-file-invoice"></i> Рахунок-фактура</h1>
     </div>
-
+    
     <form method="post" action="{% url 'create_invoice' %}" id="invoiceForm">
         {% csrf_token %}
-
+        
         <div class="form-row">
-            <label>Номер рахунку:</label>
+            <label>Номер:</label>
             <input type="text" name="invoice_number" value="{{ invoice_number }}" readonly>
         </div>
-
+        
         <div class="form-row">
             <label>Дата виписки:</label>
             <input type="text" name="invoice_date" value="{{ invoice_date }}" readonly>
         </div>
-
+        
         <div class="form-row">
             <label>Термін оплати:</label>
-            <input type="date" name="due_date" required>
+            <input type="date" name="due_date">
         </div>
-
+        
         <div class="form-row">
-            <label>Покупець:</label>
+            <label>Юридична особа:</label>
             <select name="legal_entity" required>
-                <option value="">— Оберіть юридичну особу —</option>
+                <option value="">-- Оберіть покупця --</option>
                 {% for entity in legal_entities %}
-                    <option value="{{ entity.id }}">{{ entity.name }} ({{ entity.code_edrpou }})</option>
+                <option value="{{ entity.id }}">{{ entity.name }} ({{ entity.code_edrpou }})</option>
                 {% endfor %}
             </select>
         </div>
-
-        <h3>Позиції рахунку</h3>
+        
+        <h3>Товари/Послуги</h3>
         <button type="button" class="btn-add" id="addRow">
             <i class="fas fa-plus"></i> Додати позицію
         </button>
-
+        
         <table class="items-table" id="itemsTable">
             <thead>
                 <tr>
-                    <th width="40">№</th>
+                    <th style="width: 30px;">№</th>
                     <th>Найменування</th>
-                    <th width="100">Кількість</th>
-                    <th width="120">Ціна, ₴</th>
-                    <th width="120">Сума, ₴</th>
-                    <th width="50"></th>
+                    <th style="width: 100px;">Кількість</th>
+                    <th style="width: 120px;">Ціна</th>
+                    <th style="width: 100px;">Сума</th>
+                    <th style="width: 50px;"></th>
                 </tr>
             </thead>
             <tbody>
-                <!-- Перший рядок додається через JavaScript -->
+                <tr class="item-row">
+                    <td class="row-num">1</td>
+                    <td>
+                        <input type="hidden" name="item_id[]" class="item-id">
+                        <input type="hidden" name="item_type[]" class="item-type">
+                        <input type="text" name="item_name[]" class="product-search item-name" placeholder="Введіть назву товару..." autocomplete="off" style="width: 100%;">
+                    </td>
+                    <td><input type="number" name="item_quantity[]" class="item-quantity" step="0.01" value="1" style="width: 100%;"></td>
+                    <td><input type="number" name="item_price[]" class="item-price" step="0.01" style="width: 100%;"></td>
+                    <td class="item-total">0.00</td>
+                    <td><button type="button" class="btn-remove" onclick="removeRow(this)">🗑️</button></td>
+                </tr>
             </tbody>
         </table>
-
+        
         <div class="totals">
             <p><strong>Сума без ПДВ:</strong> <span id="subtotal">0.00</span> ₴</p>
             <p><strong>ПДВ 20%:</strong> <span id="vat">0.00</span> ₴</p>
-            <p style="font-size: 18px; margin-top: 12px;">
-                <strong>РАЗОМ ДО СПЛАТИ:</strong> <span id="total">0.00</span> ₴
-            </p>
+            <p><strong>ВСЬОГО ДО ОПЛАТИ:</strong> <span id="total">0.00</span> ₴</p>
         </div>
-
+        
         <button type="submit" class="btn-submit">
-            <i class="fas fa-save"></i> Зберегти та роздрукувати рахунок
+            <i class="fas fa-save"></i> Зберегти та роздрукувати
         </button>
     </form>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
-
 <script>
-$(document).ready(function() {
     let rowCount = 1;
-
+    
     function updateTotals() {
         let subtotal = 0;
-        $('.item-row').each(function() {
-            const qty = parseFloat($(this).find('.item-quantity').val()) || 0;
-            const price = parseFloat($(this).find('.item-price').val()) || 0;
-            const total = qty * price;
-            $(this).find('.item-total').text(total.toFixed(2));
+        document.querySelectorAll('.item-row').forEach(row => {
+            const quantity = parseFloat(row.querySelector('.item-quantity').value) || 0;
+            const price = parseFloat(row.querySelector('.item-price').value) || 0;
+            const total = quantity * price;
+            row.querySelector('.item-total').textContent = total.toFixed(2);
             subtotal += total;
         });
-
+        
         const vat = subtotal * 0.2;
         const total = subtotal + vat;
-
-        $('#subtotal').text(subtotal.toFixed(2));
-        $('#vat').text(vat.toFixed(2));
-        $('#total').text(total.toFixed(2));
+        
+        document.getElementById('subtotal').textContent = subtotal.toFixed(2);
+        document.getElementById('vat').textContent = vat.toFixed(2);
+        document.getElementById('total').textContent = total.toFixed(2);
     }
-
+    
     function removeRow(btn) {
-        if ($('.item-row').length > 1) {
-            $(btn).closest('.item-row').remove();
+        if (document.querySelectorAll('.item-row').length > 1) {
+            btn.closest('.item-row').remove();
             updateRowNumbers();
             updateTotals();
         } else {
-            alert('Має залишитися хоча б одна позиція');
+            alert('Має бути хоча б одна позиція');
         }
     }
-
+    
     function updateRowNumbers() {
-        $('.item-row').each(function(index) {
-            $(this).find('.row-num').text(index + 1);
+        document.querySelectorAll('.item-row').forEach((row, idx) => {
+            row.querySelector('.row-num').textContent = idx + 1;
         });
+        rowCount = document.querySelectorAll('.item-row').length;
     }
-
-    function setupAutocomplete(input) {
-        input.autocomplete({
+    
+    function setupAutocomplete(inputElement) {
+        inputElement.autocomplete({
             source: function(request, response) {
-                $.get("{% url 'search_products_api' %}", { q: request.term }, function(data) {
-                    response($.map(data, function(item) {
-                        return {
-                            label: `${item.name} (${item.type_label}) — ${item.price} ₴`,
-                            value: item.name,
-                            id: item.id,
-                            type: item.type,
-                            price: item.price
-                        };
-                    }));
+                $.ajax({
+                    url: "{% url 'search_products_api' %}",
+                    data: { q: request.term },
+                    dataType: "json",
+                    success: function(data) {
+                        response($.map(data, function(item) {
+                            return {
+                                label: `${item.name} - ${item.price}₴`,
+                                value: item.name,
+                                id: item.id,
+                                type: item.type,
+                                price: item.price,
+                                type_label: item.type_label,
+                                code: item.code,
+                                article: item.article,
+                                stock: item.stock
+                            };
+                        }));
+                    }
                 });
             },
             minLength: 2,
@@ -270,72 +316,87 @@ $(document).ready(function() {
                 const row = $(this).closest('.item-row');
                 row.find('.item-id').val(ui.item.id);
                 row.find('.item-type').val(ui.item.type);
-                row.find('.item-price').val(ui.item.price).trigger('input');
+                row.find('.item-price').val(ui.item.price);
+                row.find('.item-price').trigger('input');
+                
+                $(this).next('.type-badge').remove();
+                $(this).after(`<span class="type-badge type-${ui.item.type === 'product' ? 'product' : 'service'}">${ui.item.type_label}</span>`);
+                
+                const priceField = row.find('.item-price');
+                priceField.addClass('price-update');
+                setTimeout(() => priceField.removeClass('price-update'), 500);
+            },
+            renderItem: function(ul, item) {
+                return $('<li>')
+                    .append(`<div class="item-name">${item.label}</div>
+                             <div class="item-details">
+                                 <span>💰 ${item.price}₴</span>
+                                 <span>${item.type_label}</span>
+                                 ${item.code ? `<span>📋 Код: ${item.code}</span>` : ''}
+                                 ${item.article ? `<span>🏷️ Артикул: ${item.article}</span>` : ''}
+                                 ${item.stock ? `<span>📊 На складі: ${item.stock}</span>` : ''}
+                             </div>`)
+                    .appendTo(ul);
             }
         });
     }
-
-    // Додавання нового рядка
-    $('#addRow').on('click', function() {
-        const tbody = $('#itemsTable tbody');
-        const newRow = `
-            <tr class="item-row">
-                <td class="row-num">${rowCount + 1}</td>
-                <td>
-                    <input type="hidden" name="item_id[]" class="item-id">
-                    <input type="hidden" name="item_type[]" class="item-type">
-                    <input type="text" name="item_name[]" class="product-search item-name" 
-                           placeholder="Почніть вводити назву товару..." autocomplete="off">
-                </td>
-                <td><input type="number" name="item_quantity[]" class="item-quantity" step="0.01" value="1" style="width:90px;"></td>
-                <td><input type="number" name="item_price[]" class="item-price" step="0.01" style="width:110px;"></td>
-                <td class="item-total">0.00</td>
-                <td><button type="button" class="btn-remove" onclick="removeRow(this)">🗑️</button></td>
-            </tr>`;
-
-        tbody.append(newRow);
-
-        const newInput = tbody.find('.item-row:last .product-search');
-        setupAutocomplete(newInput);
-
-        // Оновлення підсумків при зміні даних
-        newInput.on('input', function() {
+    
+    // Ініціалізація
+    document.querySelectorAll('.product-search').forEach(input => {
+        setupAutocomplete($(input));
+        $(input).on('input', function() {
+            const row = $(this).closest('.item-row');
             if (!$(this).val()) {
-                const row = $(this).closest('.item-row');
-                row.find('.item-id, .item-type, .item-price').val('');
+                row.find('.item-id').val('');
+                row.find('.item-type').val('');
+                row.find('.item-price').val('');
+                $(this).next('.type-badge').remove();
                 updateTotals();
             }
         });
-
-        tbody.find('.item-row:last .item-quantity, .item-row:last .item-price').on('input', updateTotals);
-
+    });
+    
+    document.querySelectorAll('.item-quantity, .item-price').forEach(el => {
+        el.addEventListener('input', updateTotals);
+    });
+    
+    document.getElementById('addRow').addEventListener('click', function() {
+        const tbody = document.querySelector('#itemsTable tbody');
+        const newRow = document.createElement('tr');
+        newRow.className = 'item-row';
+        newRow.innerHTML = `
+            <td class="row-num">${rowCount + 1}</td>
+            <td>
+                <input type="hidden" name="item_id[]" class="item-id">
+                <input type="hidden" name="item_type[]" class="item-type">
+                <input type="text" name="item_name[]" class="product-search item-name" placeholder="Введіть назву товару..." autocomplete="off" style="width: 100%;">
+            </td>
+            <td><input type="number" name="item_quantity[]" class="item-quantity" step="0.01" value="1" style="width: 100%;"></td>
+            <td><input type="number" name="item_price[]" class="item-price" step="0.01" style="width: 100%;"></td>
+            <td class="item-total">0.00</td>
+            <td><button type="button" class="btn-remove" onclick="removeRow(this)">🗑️</button></td>
+        `;
+        tbody.appendChild(newRow);
+        
+        const newInput = newRow.querySelector('.product-search');
+        setupAutocomplete($(newInput));
+        
+        $(newInput).on('input', function() {
+            const row = $(this).closest('.item-row');
+            if (!$(this).val()) {
+                row.find('.item-id').val('');
+                row.find('.item-type').val('');
+                row.find('.item-price').val('');
+                $(this).next('.type-badge').remove();
+                updateTotals();
+            }
+        });
+        
+        newRow.querySelector('.item-quantity').addEventListener('input', updateTotals);
+        newRow.querySelector('.item-price').addEventListener('input', updateTotals);
+        
         rowCount++;
         updateRowNumbers();
     });
-
-    // Ініціалізація першого рядка
-    setupAutocomplete($('.product-search'));
-    $('.item-quantity, .item-price').on('input', updateTotals);
-
-    // Початковий розрахунок
-    updateTotals();
-});
-
-// Глобальна функція для видалення рядка (викликається з onclick)
-function removeRow(btn) {
-    if ($('.item-row').length > 1) {
-        $(btn).closest('.item-row').remove();
-        updateRowNumbers();
-        updateTotals();
-    } else {
-        alert('Має бути хоча б одна позиція в рахунку');
-    }
-}
-
-function updateRowNumbers() {
-    $('.item-row').each(function(index) {
-        $(this).find('.row-num').text(index + 1);
-    });
-}
 </script>
 {% endblock %}

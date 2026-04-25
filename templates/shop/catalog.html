@@ -80,14 +80,14 @@
                     </div>
                     <div class="product-card-body">
                         <a href="{{ product.get_absolute_url }}" class="product-card-title">{{ product.title|truncatechars:40 }}</a>
-                        <div class="product-card-category">{{ product.category.name }}</div>
                         <div class="product-card-price">
-                            {% if product.old_price %}
-                            <span class="product-card-old-price">{{ product.price }}₴</span> {{ product.old_price }}₴
-                            {% else %}
-                            {{ product.price }}₴
-                            {% endif %}
-                        </div>
+    {% if product.old_price %}
+    <span class="product-card-old-price">{{ product.price|floatformat:0 }}₴</span>
+    <span class="current-price">{{ product.old_price|floatformat:0 }}<span class="currency">₴</span></span>
+    {% else %}
+    <span class="current-price">{{ product.price|floatformat:0 }}<span class="currency">₴</span></span>
+    {% endif %}
+</div>
                         {% if product.rating > 0 %}
                         <div class="small text-warning mt-1">
                             {% for i in "12345"|make_list %}

@@ -1,0 +1,522 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uk">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}TechShop Admin{% endblock %}</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'admin/css/admin-sidebar.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    <div class="admin-layout">
+        <!-- Бокова панель -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-laptop-code"></i> TechShop</h2>
+                <p>Адмін-панель</p>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-title">ГОЛОВНЕ</div>
+                <div class="nav-item {% if request.path == '/admin/' %}active{% endif %}">
+                    <a href="{% url 'admin:index' %}"><i class="fas fa-chart-line"></i> <span>Дашборд</span></a>
+                </div>
+
+                <div class="nav-title">ТОВАРИ</div>
+                <div class="nav-item {% if '/shop/product' in request.path %}active{% endif %}">
+                    <a href="/admin/shop/product/"><i class="fas fa-box"></i> <span>Товари</span></a>
+                </div>
+                <div class="nav-item {% if '/shop/category' in request.path %}active{% endif %}">
+                    <a href="/admin/shop/category/"><i class="fas fa-folder-tree"></i> <span>Категорії</span></a>
+                </div>
+                <div class="nav-item {% if '/shop/brand' in request.path %}active{% endif %}">
+                    <a href="/admin/shop/brand/"><i class="fas fa-trademark"></i> <span>Бренди</span></a>
+                </div>
+                <div class="nav-item {% if '/shop/property' in request.path %}active{% endif %}">
+                    <a href="/admin/shop/property/"><i class="fas fa-list-ul"></i> <span>Властивості</span></a>
+                </div>
+
+                <div class="nav-title">ЗАМОВЛЕННЯ</div>
+                <div class="nav-item {% if '/shop/order' in request.path %}active{% endif %}">
+                    <a href="/admin/shop/order/"><i class="fas fa-shopping-cart"></i> <span>Замовлення</span></a>
+                </div>
+                <div class="nav-item {% if '/shop/invoice' in request.path %}active{% endif %}">
+                    <a href="/admin/shop/invoice/"><i class="fas fa-file-invoice"></i> <span>Рахунки</span></a>
+                </div>
+
+                <div class="nav-title">КОРИСТУВАЧІ</div>
+                <div class="nav-item {% if '/accounts/user' in request.path %}active{% endif %}">
+                    <a href="/admin/accounts/user/"><i class="fas fa-users"></i> <span>Користувачі</span></a>
+                </div>
+                <div class="nav-item {% if '/shop/legalentity' in request.path %}active{% endif %}">
+                    <a href="/admin/shop/legalentity/"><i class="fas fa-building"></i> <span>Юрособи</span></a>
+                </div>
+
+                <div class="nav-title">СЕРВІСНІ УТИЛІТИ</div>
+                <div class="nav-item">
+                    <a href="/admin/import-products/"><i class="fas fa-upload"></i> <span>Імпорт товарів
+                            (Excel)</span></a>
+                </div>
+                <div class="nav-item">
+                    <a href="/admin/export-products/"><i class="fas fa-download"></i> <span>Експорт товарів
+                            (CSV)</span></a>
+                </div>
+                <div class="nav-item">
+                    <a href="/admin/shop/product/download-missing-images/"><i class="fas fa-image"></i>
+                        <span>Завантажити зображення</span></a>
+                </div>
+                <div class="nav-item">
+                    <a href="/admin/pricelist/"><i class="fas fa-file-invoice-dollar"></i> <span>Отримати
+                            прайс-лист</span></a>
+                </div>
+                <div class="nav-item">
+                    <a href="/admin/search-products/"><i class="fas fa-search"></i> <span>Пошук товарів (API)</span></a>
+                </div>
+                <div class="nav-item">
+                    <a href="{% url 'backup:list' %}"><i class="fas fa-database"></i> <span>Резервне
+                            копіювання</span></a>
+                </div>
+                <div class="nav-item">
+                    <a href="/admin/service-calculator/"><i class="fas fa-calculator"></i> <span>Калькулятор
+                            послуг</span></a>
+                </div>
+
+                <div class="nav-title">ІНШЕ</div>
+                <div class="nav-item {% if '/shop/review' in request.path %}active{% endif %}">
+                    <a href="/admin/shop/review/"><i class="fas fa-star"></i> <span>Відгуки</span></a>
+                </div>
+
+                <div class="nav-divider"></div>
+                <div class="nav-item">
+                    <a href="{% url 'admin:logout' %}"><i class="fas fa-sign-out-alt"></i> <span>Вихід</span></a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Основний контент -->
+        <main class="main-content">
+            <div class="topbar">
+                <div style="display: flex; align-items: center;">
+                    <button class="menu-toggle" id="menuToggle" style="display: none;">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div class="search-bar">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="adminSearch" placeholder="Пошук по адмін-панелі...">
+                    </div>
+                </div>
+                <div class="topbar-right">
+                    <div class="notifications-dropdown">
+                        <button class="notification-btn" id="notificationsBtn">
+                            <i class="far fa-bell"></i>
+                            <span class="badge-count" id="notificationsCount">0</span>
+                        </button>
+                        <div class="notifications-menu" id="notificationsMenu">
+                            <div class="notifications-header">
+                                <span>Сповіщення</span>
+                                <button id="markAllReadBtn" class="mark-read-btn">Позначити всі</button>
+                            </div>
+                            <div class="notifications-list" id="notificationsList">
+                                <div class="no-notifications">Завантаження...</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="user-info" id="userMenuBtn">
+                        <div class="user-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <span>{{ user.username }}</span>
+                        <i class="fas fa-chevron-down"></i>
+                        <div class="user-menu" id="userMenu">
+                            <a href="{% url 'admin:password_change' %}"><i class="fas fa-key"></i> Змінити пароль</a>
+                            <form method="post" action="{% url 'admin:logout' %}" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="dropdown-item"
+                                    style="background: none; border: none; width: 100%; text-align: left;">
+                                    <i class="fas fa-sign-out-alt"></i> Вийти
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-wrapper" style="padding: 24px;">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+    <style>
+        .notifications-dropdown {
+            position: relative;
+        }
+
+        .notifications-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            width: 350px;
+            max-height: 400px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            display: none;
+            z-index: 1000;
+            overflow: hidden;
+        }
+
+        .notifications-menu.show {
+            display: block;
+        }
+
+        body.dark-mode .notifications-menu {
+            background: #1e293b;
+            border: 1px solid #334155;
+        }
+
+        .notifications-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            border-bottom: 1px solid #eef2f6;
+            font-weight: 600;
+        }
+
+        body.dark-mode .notifications-header {
+            border-bottom-color: #334155;
+        }
+
+        .mark-read-btn {
+            background: none;
+            border: none;
+            color: #3b82f6;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .notifications-list {
+            max-height: 350px;
+            overflow-y: auto;
+        }
+
+        .notification-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid #eef2f6;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .notification-item:hover {
+            background: #f8fafc;
+        }
+
+        body.dark-mode .notification-item {
+            border-bottom-color: #334155;
+        }
+
+        body.dark-mode .notification-item:hover {
+            background: #334155;
+        }
+
+        .notification-item.unread {
+            background: #eff6ff;
+        }
+
+        body.dark-mode .notification-item.unread {
+            background: #1e3a5f;
+        }
+
+        .notification-title {
+            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+
+        .notification-message {
+            font-size: 12px;
+            color: #64748b;
+            margin-bottom: 4px;
+        }
+
+        .notification-time {
+            font-size: 10px;
+            color: #94a3b8;
+        }
+
+        .no-notifications {
+            padding: 30px;
+            text-align: center;
+            color: #64748b;
+        }
+
+        .user-info {
+            position: relative;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 40px;
+            transition: background 0.2s;
+        }
+
+        .user-info:hover {
+            background: #f1f5f9;
+        }
+
+        body.dark-mode .user-info:hover {
+            background: #334155;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background: #3b82f6;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .user-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            min-width: 200px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            display: none;
+            z-index: 1000;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .user-menu.show {
+            display: block;
+        }
+
+        body.dark-mode .user-menu {
+            background: #1e293b;
+            border: 1px solid #334155;
+        }
+
+        .user-menu a,
+        .user-menu button {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            color: #1e293b;
+            text-decoration: none;
+            transition: background 0.2s;
+            width: 100%;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .user-menu a:hover,
+        .user-menu button:hover {
+            background: #f8fafc;
+        }
+
+        body.dark-mode .user-menu a,
+        body.dark-mode .user-menu button {
+            color: #e2e8f0;
+        }
+
+        body.dark-mode .user-menu a:hover,
+        body.dark-mode .user-menu button:hover {
+            background: #334155;
+        }
+
+        .user-menu a i,
+        .user-menu button i {
+            width: 20px;
+        }
+
+        .dropdown-item {
+            background: none;
+            border: none;
+            width: 100%;
+            text-align: left;
+        }
+
+        @media (max-width: 768px) {
+            .notifications-menu {
+                width: 300px;
+                right: -50px;
+            }
+
+            .user-menu {
+                right: -20px;
+            }
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+            background: #f1f5f9;
+            border-radius: 30px;
+            padding: 8px 16px;
+            width: 300px;
+            transition: all 0.2s;
+        }
+
+        .search-bar:focus-within {
+            background: white;
+            box-shadow: 0 0 0 2px #3b82f6;
+        }
+
+        body.dark-mode .search-bar {
+            background: #334155;
+        }
+
+        body.dark-mode .search-bar:focus-within {
+            background: #1e293b;
+        }
+
+        .search-bar i {
+            color: #64748b;
+            margin-right: 8px;
+        }
+
+        .search-bar input {
+            background: transparent;
+            border: none;
+            outline: none;
+            width: 100%;
+            font-size: 14px;
+        }
+
+        body.dark-mode .search-bar input {
+            color: #f8fafc;
+        }
+
+        .search-bar input::placeholder {
+            color: #94a3b8;
+        }
+    </style>
+
+    <script>
+        // Бокове меню
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        if (menuToggle) {
+            menuToggle.addEventListener('click', function () { sidebar.classList.toggle('open'); });
+        }
+
+        function checkWidth() {
+            const toggle = document.getElementById('menuToggle');
+            if (window.innerWidth <= 1024) {
+                if (toggle) toggle.style.display = 'block';
+            } else {
+                if (toggle) toggle.style.display = 'none';
+                if (sidebar) sidebar.classList.remove('open');
+            }
+        }
+        window.addEventListener('load', checkWidth);
+        window.addEventListener('resize', checkWidth);
+
+        // Сповіщення
+        let notificationsCheckInterval = null;
+
+        function loadNotifications() {
+            fetch('/admin/api/notifications/')
+                .then(response => response.json())
+                .then(data => {
+                    const count = data.count;
+                    const countEl = document.getElementById('notificationsCount');
+                    if (countEl) {
+                        countEl.textContent = count;
+                        countEl.style.display = count > 0 ? 'inline-block' : 'none';
+                    }
+                    const listEl = document.getElementById('notificationsList');
+                    if (listEl) {
+                        if (data.notifications.length === 0) {
+                            listEl.innerHTML = '<div class="no-notifications">Немає нових сповіщень</div>';
+                        } else {
+                            listEl.innerHTML = data.notifications.map(n => `
+                                <div class="notification-item unread" data-id="${n.id}" data-link="${n.link}">
+                                    <div class="notification-title">${n.title}</div>
+                                    <div class="notification-message">${n.message}</div>
+                                    <div class="notification-time">${n.created_at}</div>
+                                </div>
+                            `).join('');
+                            document.querySelectorAll('.notification-item').forEach(item => {
+                                item.addEventListener('click', function (e) {
+                                    const id = this.dataset.id;
+                                    const link = this.dataset.link;
+                                    fetch(`/admin/api/notifications/mark/${id}/`, { method: 'POST' })
+                                        .then(() => { if (link) window.location.href = link; else loadNotifications(); });
+                                });
+                            });
+                        }
+                    }
+                }).catch(error => console.error('Помилка завантаження сповіщень:', error));
+        }
+
+        const notificationsBtn = document.getElementById('notificationsBtn');
+        const notificationsMenu = document.getElementById('notificationsMenu');
+        if (notificationsBtn && notificationsMenu) {
+            notificationsBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                notificationsMenu.classList.toggle('show');
+                loadNotifications();
+            });
+        }
+
+        document.addEventListener('click', function (e) {
+            if (notificationsMenu && notificationsBtn && !notificationsMenu.contains(e.target) && !notificationsBtn.contains(e.target)) {
+                notificationsMenu.classList.remove('show');
+            }
+            if (userMenu && userMenuBtn && !userMenu.contains(e.target) && !userMenuBtn.contains(e.target)) {
+                userMenu.classList.remove('show');
+            }
+        });
+
+        const markAllBtn = document.getElementById('markAllReadBtn');
+        if (markAllBtn) {
+            markAllBtn.addEventListener('click', function () {
+                fetch('/admin/api/notifications/mark-all/', { method: 'POST' }).then(() => loadNotifications());
+            });
+        }
+
+        loadNotifications();
+        if (notificationsCheckInterval) clearInterval(notificationsCheckInterval);
+        notificationsCheckInterval = setInterval(loadNotifications, 30000);
+
+        // Меню користувача
+        const userMenuBtn = document.getElementById('userMenuBtn');
+        const userMenu = document.getElementById('userMenu');
+        if (userMenuBtn && userMenu) {
+            userMenuBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                userMenu.classList.toggle('show');
+            });
+        }
+
+        // Пошук
+        const adminSearch = document.getElementById('adminSearch');
+        if (adminSearch) {
+            adminSearch.addEventListener('keyup', function (e) {
+                const searchTerm = this.value.toLowerCase();
+                if (e.key === 'Enter' && searchTerm) {
+                    window.location.href = `/admin/search/?q=${encodeURIComponent(searchTerm)}`;
+                }
+            });
+        }
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

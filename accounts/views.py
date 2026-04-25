@@ -4,6 +4,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.views import PasswordChangeView
 from django.urls import reverse_lazy
+
+from shop.models import Order
 from .forms import RegistrationForm, LoginForm, UserProfileForm
 from .models import User
 
@@ -83,3 +85,15 @@ class CustomPasswordChangeView(PasswordChangeView):
     def form_valid(self, form):
         messages.success(self.request, 'Пароль успішно змінено!')
         return super().form_valid(form)
+
+
+@login_required
+def user_orders(request):
+    """Список замовлень користувача"""
+    # Шукаємо замовлення за email користувача
+    orders = Order.objects.filter(email=request.user.email).order_by('-created_at')
+    
+    context = {
+        'orders': orders,
+    }
+    return render(request, 'accounts/orders.html', context)

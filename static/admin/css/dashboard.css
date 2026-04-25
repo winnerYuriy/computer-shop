@@ -1,42 +1,53 @@
-/* Розширення головних контейнерів адмінки на всю ширину */
+/* ============================================================
+   ГОЛОВНІ КОНТЕЙНЕРИ
+   ============================================================ */
+
 #container,
 #content,
-#content-main,
-.dashboard-stats {
+#content-main {
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box;
 }
 
-/* Скидання обмежень для колонок адмінки */
 #content {
     margin: 0 !important;
     padding: 20px !important;
 }
 
-/* Якщо є обгортка з класом .main */
 .main,
 #main {
     width: 100% !important;
     max-width: 100% !important;
 }
 
-@media (max-width: 576px) {
-    .dashboard-stats {
-        grid-template-columns: 1fr;
-    }
+/* ============================================================
+   БЛОК СТАТИСТИКИ (FLEX РЯДОК)
+   ============================================================ */
+
+.dashboard-stats {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+    width: 100% !important;
+    max-width: 100% !important;
 }
 
 .stat-card {
+    flex: 1;
+    min-width: 200px;
     background: white;
     border-radius: 16px;
     padding: 20px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     transition: transform 0.2s, box-shadow 0.2s;
     border: 1px solid #eef2f6;
+    text-align: center;
 }
 
-/* Темна тема */
 body.dark-mode .stat-card {
     background: #1e293b;
     border-color: #334155;
@@ -45,40 +56,43 @@ body.dark-mode .stat-card {
 
 .stat-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
 }
 
-.stat-icon { 
-    font-size: 32px; 
-    color: #3b82f6; 
-    margin-bottom: 12px; 
+.stat-icon {
+    font-size: 32px;
+    color: #3b82f6;
+    margin-bottom: 12px;
 }
 
-.stat-value { 
-    font-size: 28px; 
-    font-weight: 700; 
-    color: #1e293b; 
-    margin-bottom: 4px; 
+.stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 4px;
 }
 
-body.dark-mode .stat-value { 
-    color: #f8fafc; 
+body.dark-mode .stat-value {
+    color: #f8fafc;
 }
 
-.stat-label { 
-    color: #64748b; 
-    font-size: 14px; 
-    text-transform: uppercase; 
-    letter-spacing: 0.5px; 
+.stat-label {
+    color: #64748b;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-.stat-change { 
-    font-size: 13px; 
-    margin-top: 8px; 
-    color: #10b981; 
+.stat-change {
+    font-size: 13px;
+    margin-top: 8px;
+    color: #10b981;
 }
 
-/* Стилі для блоку імпорту/експорту */
+/* ============================================================
+   БЛОК ІМПОРТУ/ЕКСПОРТУ
+   ============================================================ */
+
 .import-export-module {
     background: white;
     border-radius: 16px;
@@ -135,7 +149,10 @@ body.dark-mode .import-export-links a {
     font-size: 16px;
 }
 
-/* Стилі для останніх замовлень */
+/* ============================================================
+   ОСТАННІ ЗАМОВЛЕННЯ
+   ============================================================ */
+
 .recent-orders {
     background: white;
     border-radius: 16px;
@@ -159,6 +176,7 @@ body.dark-mode .recent-orders {
 
 .recent-orders table {
     width: 100%;
+    border-collapse: collapse;
 }
 
 .recent-orders th,
@@ -182,7 +200,10 @@ body.dark-mode .recent-orders th {
     color: #94a3b8;
 }
 
-/* Бейджі статусів */
+/* ============================================================
+   БЕЙДЖІ СТАТУСІВ
+   ============================================================ */
+
 .badge {
     display: inline-block;
     padding: 4px 10px;
@@ -198,26 +219,158 @@ body.dark-mode .recent-orders th {
 .badge-delivered { background: #06b6d4; color: white; }
 .badge-cancelled { background: #ef4444; color: white; }
 
-/* Адаптивність для таблиці */
-@media (max-width: 768px) {
-    .recent-orders table {
-        font-size: 14px;
-    }
-    
-    .recent-orders th,
-    .recent-orders td {
-        padding: 8px 4px;
-    }
-    
-    .import-export-links a {
-        padding: 8px 16px;
-        font-size: 14px;
-    }
+/* ============================================================
+   СІТКА МОДЕЛЕЙ (ГОЛОВНА АДМІНКА)
+   ============================================================ */
+
+#content-main.app-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 24px;
+    padding: 20px 0;
 }
 
-/* =========================================================
-   СТИЛІ ДЛЯ СТОРІНКИ ПРАЙС-ЛИСТА
-   ========================================================= */
+.app-module {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    border: 1px solid #eef2f6;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.app-module:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+body.dark-mode .app-module {
+    background: #1e293b;
+    border-color: #334155;
+}
+
+.app-module caption {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 15px 20px;
+    font-size: 16px;
+    font-weight: 600;
+    text-align: left;
+}
+
+body.dark-mode .app-module caption {
+    background: linear-gradient(135deg, #4f46e5 0%, #5b21b6 100%);
+}
+
+.app-module caption a {
+    color: white !important;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.app-module caption a i {
+    font-size: 18px;
+}
+
+.app-module table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.app-module tbody tr {
+    border-bottom: 1px solid #eef2f6;
+    transition: background 0.2s;
+}
+
+.app-module tbody tr:last-child {
+    border-bottom: none;
+}
+
+.app-module tbody tr:hover {
+    background: #f8fafc;
+}
+
+body.dark-mode .app-module tbody tr {
+    border-bottom-color: #334155;
+}
+
+body.dark-mode .app-module tbody tr:hover {
+    background: #334155;
+}
+
+.app-module th {
+    padding: 12px 16px;
+    font-weight: 500;
+    width: 60%;
+}
+
+.app-module th a {
+    color: #1e293b;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+}
+
+.app-module th a i {
+    color: #3b82f6;
+    width: 20px;
+    font-size: 14px;
+}
+
+body.dark-mode .app-module th a {
+    color: #e2e8f0;
+}
+
+.app-module td {
+    padding: 12px 16px;
+    text-align: right;
+}
+
+.app-module .addlink,
+.app-module .changelink {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.app-module .addlink {
+    background: #10b981;
+    color: white;
+    margin-right: 8px;
+}
+
+.app-module .addlink:hover {
+    background: #059669;
+    transform: translateY(-1px);
+}
+
+.app-module .changelink {
+    background: #3b82f6;
+    color: white;
+}
+
+.app-module .changelink:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+}
+
+body.dark-mode .app-module .addlink,
+body.dark-mode .app-module .changelink {
+    color: white;
+}
+
+/* ============================================================
+   СТОРІНКА ПРАЙС-ЛИСТА
+   ============================================================ */
 
 .pricelist-container {
     max-width: 1200px;
@@ -231,7 +384,7 @@ body.dark-mode .recent-orders th {
     padding: 24px;
     border: 1px solid #eef2f6;
     margin-bottom: 30px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 body.dark-mode .pricelist-card {
@@ -296,7 +449,7 @@ body.dark-mode .pricelist-form-row select {
 .pricelist-form-row select:focus {
     outline: none;
     border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .pricelist-buttons {
@@ -326,37 +479,15 @@ body.dark-mode .pricelist-buttons {
     font-size: 14px;
 }
 
-.btn-pricelist-primary {
-    background: #3b82f6;
-    color: white;
-}
+.btn-pricelist-primary { background: #3b82f6; color: white; }
+.btn-pricelist-primary:hover { background: #2563eb; transform: translateY(-2px); }
 
-.btn-pricelist-primary:hover {
-    background: #2563eb;
-    transform: translateY(-2px);
-}
+.btn-pricelist-success { background: #10b981; color: white; }
+.btn-pricelist-success:hover { background: #059669; transform: translateY(-2px); }
 
-.btn-pricelist-success {
-    background: #10b981;
-    color: white;
-}
+.btn-pricelist-secondary { background: #64748b; color: white; }
+.btn-pricelist-secondary:hover { background: #475569; transform: translateY(-2px); }
 
-.btn-pricelist-success:hover {
-    background: #059669;
-    transform: translateY(-2px);
-}
-
-.btn-pricelist-secondary {
-    background: #64748b;
-    color: white;
-}
-
-.btn-pricelist-secondary:hover {
-    background: #475569;
-    transform: translateY(-2px);
-}
-
-/* Результат */
 .pricelist-result {
     background: #f0fdf4;
     border-left: 4px solid #10b981;
@@ -385,9 +516,7 @@ body.dark-mode .pricelist-result h3 {
     word-break: break-all;
 }
 
-.pricelist-result a:hover {
-    color: #047857;
-}
+.pricelist-result a:hover { color: #047857; }
 
 .pricelist-error {
     background: #fef2f2;
@@ -398,7 +527,6 @@ body.dark-mode .pricelist-result h3 {
     color: #b91c1c;
 }
 
-/* Інформаційна панель */
 .pricelist-info {
     background: #eff6ff;
     border-radius: 12px;
@@ -428,7 +556,6 @@ body.dark-mode .pricelist-info-item {
     font-size: 20px;
 }
 
-/* Сповіщення */
 .messagelist .success {
     background: #d1fae5;
     color: #065f46;
@@ -443,32 +570,81 @@ body.dark-mode .pricelist-info-item {
     padding: 12px 16px;
 }
 
-/* Адаптивність для сторінки прайс-листа */
+/* ============================================================
+   АДАПТИВНІСТЬ
+   ============================================================ */
+
+@media (max-width: 1024px) {
+    .dashboard-stats {
+        gap: 15px;
+    }
+    .stat-card {
+        min-width: 180px;
+    }
+}
+
 @media (max-width: 768px) {
+    .dashboard-stats {
+        flex-direction: column;
+    }
+    .stat-card {
+        min-width: auto;
+    }
+    .recent-orders table {
+        font-size: 14px;
+    }
+    .recent-orders th,
+    .recent-orders td {
+        padding: 8px 4px;
+    }
+    .import-export-links a {
+        padding: 8px 16px;
+        font-size: 14px;
+    }
+    #content-main.app-list {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    .app-module th,
+    .app-module td {
+        padding: 10px 12px;
+    }
+    .app-module .addlink,
+    .app-module .changelink {
+        padding: 4px 10px;
+        font-size: 11px;
+    }
     .pricelist-form-row {
         flex-direction: column;
         align-items: flex-start;
     }
-    
     .pricelist-form-row label {
         width: 100%;
     }
-    
     .pricelist-form-row input,
     .pricelist-form-row select {
         width: 100%;
     }
-    
     .pricelist-buttons {
         flex-direction: column;
     }
-    
     .btn-pricelist {
         justify-content: center;
     }
-    
     .pricelist-info {
         flex-direction: column;
         gap: 10px;
+    }
+}
+
+@media (max-width: 576px) {
+    .dashboard-stats {
+        gap: 12px;
+    }
+    .stat-value {
+        font-size: 24px;
+    }
+    .stat-icon {
+        font-size: 28px;
     }
 }

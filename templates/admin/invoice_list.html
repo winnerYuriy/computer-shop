@@ -44,14 +44,15 @@
         gap: 8px;
     }
     
+    /* Фільтри */
     .filter-bar {
         background: #f8fafc;
-        padding: 15px;
+        padding: 20px;
         border-radius: 12px;
-        margin-bottom: 20px;
-        display: flex;
+        margin-bottom: 25px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
         gap: 15px;
-        flex-wrap: wrap;
         align-items: flex-end;
     }
     
@@ -65,33 +66,68 @@
         font-size: 12px;
         font-weight: 600;
         color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
     
     .filter-group input, .filter-group select {
-        padding: 8px 12px;
+        padding: 10px 12px;
         border: 1px solid #e2e8f0;
         border-radius: 8px;
-        min-width: 150px;
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+    
+    .filter-group input:focus, .filter-group select:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+    }
+    
+    .filter-actions {
+        display: flex;
+        gap: 10px;
+        align-items: center;
     }
     
     .btn-filter {
         background: #3b82f6;
         color: white;
         border: none;
-        padding: 8px 16px;
+        padding: 10px 20px;
         border-radius: 8px;
         cursor: pointer;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: background 0.2s;
+    }
+    
+    .btn-filter:hover {
+        background: #2563eb;
     }
     
     .btn-reset {
         background: #64748b;
         color: white;
         border: none;
-        padding: 8px 16px;
+        padding: 10px 20px;
         border-radius: 8px;
         cursor: pointer;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        transition: background 0.2s;
     }
     
+    .btn-reset:hover {
+        background: #475569;
+    }
+    
+    /* Таблиця */
     .invoice-table {
         width: 100%;
         border-collapse: collapse;
@@ -127,18 +163,33 @@
     .status-overdue { background: #fecaca; color: #b91c1c; }
     
     .btn-sm {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
         padding: 4px 10px;
         border-radius: 6px;
         text-decoration: none;
         font-size: 12px;
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
+        transition: all 0.2s;
     }
     
-    .btn-pdf { background: #ef4444; color: white; }
-    .btn-view { background: #3b82f6; color: white; }
+    .btn-pdf { 
+    background: #10b981; 
+    color: white; 
+}
+.btn-pdf:hover { 
+    background: #059669; 
+}
+
+.btn-edit { 
+    background: #3b82f6; 
+    color: white; 
+}
+.btn-edit:hover { 
+    background: #2563eb; 
+}
     
+    /* Пагінація */
     .pagination {
         margin-top: 20px;
         display: flex;
@@ -159,6 +210,23 @@
         color: white;
         border-color: #3b82f6;
     }
+    
+    .info-badge {
+        background: #e0f2fe;
+        color: #0369a1;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+    }
+    
+    @media (max-width: 768px) {
+        .filter-bar {
+            grid-template-columns: 1fr;
+        }
+        .invoice-table {
+            font-size: 12px;
+        }
+    }
 </style>
 {% endblock %}
 
@@ -174,20 +242,24 @@
     <!-- Фільтри -->
     <form method="get" class="filter-bar">
         <div class="filter-group">
-            <label>№ рахунку</label>
-            <input type="text" name="invoice_number" value="{{ request.GET.invoice_number|default:'' }}" placeholder="Пошук за номером">
+            <label><i class="fas fa-hashtag"></i> № рахунку</label>
+            <input type="text" name="invoice_number" value="{{ request.GET.invoice_number|default:'' }}" placeholder="Пошук за номером...">
         </div>
+        
         <div class="filter-group">
-            <label>Юридична особа</label>
+            <label><i class="fas fa-building"></i> Юридична особа</label>
             <select name="legal_entity">
                 <option value="">Всі</option>
                 {% for entity in legal_entities %}
-                <option value="{{ entity.id }}" {% if request.GET.legal_entity == entity.id|stringformat:"s" %}selected{% endif %}>{{ entity.name }}</option>
+                <option value="{{ entity.id }}" {% if request.GET.legal_entity == entity.id|stringformat:"s" %}selected{% endif %}>
+                    {{ entity.name }} ({{ entity.code_edrpou }})
+                </option>
                 {% endfor %}
             </select>
         </div>
+        
         <div class="filter-group">
-            <label>Статус оплати</label>
+            <label><i class="fas fa-credit-card"></i> Статус оплати</label>
             <select name="payment_status">
                 <option value="">Всі</option>
                 <option value="unpaid" {% if request.GET.payment_status == 'unpaid' %}selected{% endif %}>Не оплачений</option>
@@ -196,19 +268,34 @@
                 <option value="overdue" {% if request.GET.payment_status == 'overdue' %}selected{% endif %}>Прострочений</option>
             </select>
         </div>
+        
         <div class="filter-group">
-            <label>Дата від</label>
+            <label><i class="fas fa-calendar-alt"></i> Дата від</label>
             <input type="date" name="date_from" value="{{ request.GET.date_from|default:'' }}">
         </div>
+        
         <div class="filter-group">
-            <label>Дата до</label>
+            <label><i class="fas fa-calendar-alt"></i> Дата до</label>
             <input type="date" name="date_to" value="{{ request.GET.date_to|default:'' }}">
         </div>
-        <div class="filter-group">
-            <button type="submit" class="btn-filter"><i class="fas fa-search"></i> Шукати</button>
-            <a href="{% url 'admin_invoice_list' %}" class="btn-reset"><i class="fas fa-times"></i> Скинути</a>
+        
+        <div class="filter-actions">
+            <button type="submit" class="btn-filter">
+                <i class="fas fa-search"></i> Шукати
+            </button>
+            <a href="{% url 'admin_invoice_list' %}" class="btn-reset">
+                <i class="fas fa-times"></i> Скинути
+            </a>
         </div>
     </form>
+    
+    <!-- Результат пошуку -->
+    {% if request.GET.invoice_number or request.GET.legal_entity or request.GET.payment_status or request.GET.date_from or request.GET.date_to %}
+    <div class="info-badge" style="margin-bottom: 15px;">
+        <i class="fas fa-filter"></i> Застосовано фільтри | 
+        Знайдено: {{ invoices|length }} рахунків
+    </div>
+    {% endif %}
     
     <!-- Таблиця -->
     <table class="invoice-table">
@@ -228,9 +315,9 @@
             <tr>
                 <td><strong>{{ invoice.invoice_number }}</strong></td>
                 <td>{{ invoice.invoice_date|date:"d.m.Y" }}</td>
-                <td>{{ invoice.legal_entity.name|truncatechars:40 }}</td>
+                <td>{{ invoice.legal_entity.name|truncatechars:50 }}</td>
                 <td>{{ invoice.legal_entity.code_edrpou }}</td>
-                <td>{{ invoice.total_amount|floatformat:2 }} ₴</td>
+                <td>{{ invoice.total_amount|floatformat:2 }} ₴</a></td>
                 <td>
                     <span class="status-badge status-{{ invoice.payment_status }}">
                         {{ invoice.get_payment_status_display }}
@@ -240,7 +327,7 @@
                     <a href="{% url 'print_invoice' invoice.id %}" class="btn-sm btn-pdf" target="_blank">
                         <i class="fas fa-file-pdf"></i> PDF
                     </a>
-                    <a href="{% url 'admin:shop_invoice_change' invoice.id %}" class="btn-sm btn-view">
+                    <a href="{% url 'admin:shop_invoice_change' invoice.id %}" class="btn-sm btn-edit">
                         <i class="fas fa-edit"></i>
                     </a>
                 </td>
@@ -249,9 +336,9 @@
             <tr>
                 <td colspan="7" style="text-align: center; padding: 40px;">
                     <i class="fas fa-inbox" style="font-size: 48px; color: #cbd5e1;"></i>
-                    <p>Немає рахунків</p>
+                    <p>Немає рахунків за заданими критеріями</p>
                     <a href="{% url 'invoice_form' %}" class="btn-new" style="display: inline-block; margin-top: 10px;">
-                        <i class="fas fa-plus"></i> Створити перший рахунок
+                        <i class="fas fa-plus"></i> Створити рахунок
                     </a>
                 </td>
             </tr>

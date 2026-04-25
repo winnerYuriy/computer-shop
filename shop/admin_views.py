@@ -21,7 +21,7 @@ from django.db import transaction
 from shop.models import Product, Category, Brand, LegalEntity, Order, Invoice, InvoiceItem, Service
 import pandas as pd
 from django.views.decorators.csrf import csrf_exempt
-
+from .models import AdminNotification
 
 # Налаштування логера
 import_logger = logging.getLogger('import_logger')
@@ -797,3 +797,40 @@ def create_invoice_from_order(request, order_id):
     messages.success(request, f'✅ Рахунок №{invoice.invoice_number} створено на основі замовлення #{order.id}')
     
     return redirect('admin:shop_invoice_change', invoice.id)
+
+
+@staff_member_required
+def get_notifications(request):
+    """AJAX отримання сповіщень"""
+    notifications = AdminNotification.objects.filter(is_read=False)[:20]
+    data = {
+        'count': notifications.count(),
+        'notifications': [
+            {
+                'id': n.id,
+                'type': n.notification_type,
+                'title': n.title,
+                'message': n.message,
+                'link': n.link,
+                'created_at': n.created_at.strftime('%d.%m.%Y %H:%M'),
+            }
+            for n in notifications
+        ]
+    }
+    return JsonResponse(data)
+
+
+@staff_member_required
+def mark_notification_read(request, notification_id):
+    """Позначити сповіщення як прочитане"""
+    notification = get_object_or_404(AdminNotification, id=notification_id)
+    notification.is_read = True
+    notification.save()
+    return JsonResponse({'success': True})
+
+
+@staff_member_required
+def mark_all_notifications_read(request):
+    """Позначити всі сповіщення як прочитані"""
+    AdminNotification.objects.filter(is_read=False).update(is_read=True)
+    return JsonResponse({'success': True})

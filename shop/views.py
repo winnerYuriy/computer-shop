@@ -5,7 +5,7 @@ from django.views.generic import ListView, DetailView
 from django.db.models import Q, Min, Max, Count
 from django.contrib import messages
 from decimal import Decimal
-from .models import Category, Product, Brand, Promotion, Review, RecentlyViewed
+from .models import Category, Order, Product, Brand, Promotion, Review, RecentlyViewed
 
 
 def home(request):
@@ -244,3 +244,18 @@ def get_recently_viewed(request, limit=8):
     ).select_related('product')[:limit]
     
     return [item.product for item in recent_items if item.product.available]
+
+
+def order_detail(request, order_id):
+    """Детальна сторінка замовлення"""
+    order = get_object_or_404(Order, id=order_id)
+    
+    # Перевіряємо, що замовлення належить поточному користувачу
+    if request.user.is_authenticated and order.email != request.user.email:
+        from django.http import HttpResponseForbidden
+        return HttpResponseForbidden("Ви не маєте доступу до цього замовлення")
+    
+    context = {
+        'order': order,
+    }
+    return render(request, 'shop/order_detail.html', context)

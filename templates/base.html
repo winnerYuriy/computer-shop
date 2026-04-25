@@ -1,25 +1,27 @@
 <!-- templates/base.html -->
 <!DOCTYPE html>
 <html lang="uk">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}TechShop - Комп'ютерна техніка{% endblock %}</title>
-    
+
     {% load static %}
-    
+
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
+
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    
+
     <style>
         .cart-badge {
             position: absolute;
@@ -33,14 +35,46 @@
             min-width: 18px;
             text-align: center;
         }
+
         .dropdown-item i {
             width: 20px;
             margin-right: 8px;
         }
+
+        .user-avatar-small {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 5px;
+        }
+
+        /* Сповіщення для користувачів */
+        .notification-toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 300px;
+            animation: slideInRight 0.3s ease;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
     </style>
-    
+
     {% block extra_css %}{% endblock %}
 </head>
+
 <body>
     <!-- Header / Navigation -->
     <nav class="navbar navbar-expand-lg sticky-top">
@@ -74,13 +108,13 @@
                             {% endif %}
                         </a>
                     </li>
-                    
+
                     <!-- Авторизація -->
                     {% if user.is_authenticated %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                             {% if user.avatar %}
-                            <img src="{{ user.avatar.url }}" alt="{{ user.username }}" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover; margin-right: 5px;">
+                            <img src="{{ user.avatar.url }}" alt="{{ user.username }}" class="user-avatar-small">
                             {% else %}
                             <i class="fas fa-user-circle"></i>
                             {% endif %}
@@ -88,21 +122,28 @@
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li><a class="dropdown-item" href="{% url 'accounts:profile' %}">
-                                <i class="fas fa-id-card"></i> Мій профіль
-                            </a></li>
+                                    <i class="fas fa-id-card"></i> Мій профіль
+                                </a></li>
                             <li><a class="dropdown-item" href="{% url 'accounts:password_change' %}">
-                                <i class="fas fa-key"></i> Змінити пароль
-                            </a></li>
+                                    <i class="fas fa-key"></i> Змінити пароль
+                                </a></li>
+                            <li><a class="dropdown-item" href="{% url 'accounts:orders' %}">
+                                    <i class="fas fa-history"></i> Мої замовлення
+                                </a></li>
                             {% if user.is_staff %}
-                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
                             <li><a class="dropdown-item" href="/admin/">
-                                <i class="fas fa-shield-alt"></i> Адмінпанель
-                            </a></li>
+                                    <i class="fas fa-shield-alt"></i> Адмінпанель
+                                </a></li>
                             {% endif %}
-                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
                             <li><a class="dropdown-item text-danger" href="{% url 'accounts:logout' %}">
-                                <i class="fas fa-sign-out-alt"></i> Вийти
-                            </a></li>
+                                    <i class="fas fa-sign-out-alt"></i> Вийти
+                                </a></li>
                         </ul>
                     </li>
                     {% else %}
@@ -127,14 +168,16 @@
         <div class="container">
             <!-- Повідомлення (messages) -->
             {% if messages %}
-                {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show mt-3" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-                {% endfor %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show mt-3" role="alert">
+                <i
+                    class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
             {% endif %}
-            
+
             {% block content %}
             {% endblock %}
         </div>
@@ -174,7 +217,18 @@
 
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
+
+    <script>
+        // Автоматичне зникнення повідомлень через 5 секунд
+        document.querySelectorAll('.alert').forEach(alert => {
+            setTimeout(() => {
+                alert.classList.add('fade');
+                setTimeout(() => alert.remove(), 500);
+            }, 5000);
+        });
+    </script>
+
     {% block extra_js %}{% endblock %}
 </body>
+
 </html>

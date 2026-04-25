@@ -1,0 +1,42 @@
+{% extends "admin/base_sidebar.html" %}
+{% load static %}
+
+{% block title %}{% if original %}Редагування{% else %}Новий товар{% endif %} - TechShop Admin{% endblock %}
+
+{% block content %}
+<div class="data-card">
+    <div class="data-card-header">
+        <h3><i class="fas fa-edit"></i> {% if original %}Редагування товару{% else %}Новий товар{% endif %}</h3>
+        <a href="../" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Назад</a>
+    </div>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:20px;">
+            <div>
+                <div class="form-group"><label>Назва товару</label>{{ form.title }}</div>
+                <div class="form-group"><label>Опис</label>{{ form.description }}</div>
+                <div class="row" style="display:grid;grid-template-columns:repeat(2,1fr);gap:15px;">
+                    <div class="form-group"><label>Категорія</label>{{ form.category }}</div>
+                    <div class="form-group"><label>Бренд</label>{{ form.brand }}</div>
+                    <div class="form-group"><label>Артикул</label>{{ form.article }}</div>
+                    <div class="form-group"><label>Код товару</label>{{ form.code }}</div>
+                </div>
+                <div class="row" style="display:grid;grid-template-columns:repeat(3,1fr);gap:15px;">
+                    <div class="form-group"><label>Ціна (₴)</label>{{ form.price }}</div>
+                    <div class="form-group"><label>Стара ціна (₴)</label>{{ form.old_price }}</div>
+                    <div class="form-group"><label>Кількість</label>{{ form.quantity }}</div>
+                </div>
+            </div>
+            <div>
+                <div class="form-group"><label>Головне зображення</label>{{ form.main_image }}{% if original.main_image %}<div style="margin-top:10px;"><img src="{{ original.main_image.url }}" style="max-width:100%;border-radius:8px;"></div>{% endif %}</div>
+                <div class="form-group"><label>{{ form.available }} В наявності</label></div>
+                <div class="form-group"><label>{{ form.is_new }} Новинка</label></div>
+                <div class="form-group"><label>{{ form.is_bestseller }} Хіт продажів</label></div>
+                <div class="form-group"><label>Гарантія (міс.)</label>{{ form.warranty }}</div>
+                <div class="form-group"><label>Країна</label>{{ form.country }}</div>
+            </div>
+        </div>
+        <div class="submit-row"><button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Зберегти</button><a href="../" class="btn btn-outline">Скасувати</a><a href="delete/" class="btn btn-danger" style="margin-left:auto;">Видалити</a></div>
+    </form>
+</div>
+{% endblock %}

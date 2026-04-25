@@ -1,0 +1,560 @@
+{% extends "admin/base_sidebar.html" %}
+{% load static %}
+
+{% block title %}Резервне копіювання - TechShop Admin{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    .backup-container {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+    
+    .backup-header {
+        margin-bottom: 24px;
+    }
+    
+    .backup-header h1 {
+        font-size: 24px;
+        font-weight: 600;
+        color: #1e293b;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 8px;
+    }
+    
+    .backup-header p {
+        color: #64748b;
+        font-size: 14px;
+        margin-left: 36px;
+    }
+    
+    body.dark-mode .backup-header h1 {
+        color: #f8fafc;
+    }
+    
+    body.dark-mode .backup-header p {
+        color: #94a3b8;
+    }
+    
+    .backup-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 32px;
+        padding: 20px;
+        background: #f8fafc;
+        border-radius: 16px;
+        border: 1px solid #eef2f6;
+    }
+    
+    body.dark-mode .backup-actions {
+        background: #1e293b;
+        border-color: #334155;
+    }
+    
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 500;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .btn-primary {
+        background: #3b82f6;
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background: #2563eb;
+        transform: translateY(-1px);
+    }
+    
+    .btn-success {
+        background: #10b981;
+        color: white;
+    }
+    
+    .btn-success:hover {
+        background: #059669;
+        transform: translateY(-1px);
+    }
+    
+    .btn-warning {
+        background: #f59e0b;
+        color: #1e293b;
+    }
+    
+    .btn-warning:hover {
+        background: #d97706;
+        transform: translateY(-1px);
+    }
+    
+    /* Картка таблиці */
+    .backup-card {
+        background: white;
+        border-radius: 16px;
+        border: 1px solid #eef2f6;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+    
+    body.dark-mode .backup-card {
+        background: #1e293b;
+        border-color: #334155;
+    }
+    
+    .card-header {
+        padding: 16px 20px;
+        border-bottom: 1px solid #eef2f6;
+        background: #f8fafc;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    body.dark-mode .card-header {
+        border-bottom-color: #334155;
+        background: #334155;
+    }
+    
+    .card-header h3 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: #1e293b;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    body.dark-mode .card-header h3 {
+        color: #f8fafc;
+    }
+    
+    .stat-badge {
+        background: #e2e8f0;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        color: #1e293b;
+    }
+    
+    body.dark-mode .stat-badge {
+        background: #1e293b;
+        color: #94a3b8;
+    }
+    
+    /* Таблиця */
+    .backup-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .backup-table th {
+        padding: 14px 16px;
+        text-align: left;
+        font-weight: 600;
+        font-size: 13px;
+        color: #64748b;
+        background: #f8fafc;
+        border-bottom: 1px solid #eef2f6;
+    }
+    
+    .backup-table td {
+        padding: 16px;
+        border-bottom: 1px solid #eef2f6;
+        font-size: 14px;
+        color: #1e293b;
+        vertical-align: middle;
+    }
+    
+    body.dark-mode .backup-table th {
+        background: #334155;
+        color: #94a3b8;
+        border-bottom-color: #475569;
+    }
+    
+    body.dark-mode .backup-table td {
+        border-bottom-color: #334155;
+        color: #e2e8f0;
+    }
+    
+    .backup-table tbody tr {
+        transition: background 0.2s;
+    }
+    
+    .backup-table tbody tr:hover {
+        background: #f8fafc;
+    }
+    
+    body.dark-mode .backup-table tbody tr:hover {
+        background: #334155;
+    }
+    
+    /* Назва файлу */
+    .filename {
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 4px;
+    }
+    
+    .filepath {
+        font-family: monospace;
+        font-size: 11px;
+        color: #64748b;
+        word-break: break-all;
+    }
+    
+    body.dark-mode .filename {
+        color: #f8fafc;
+    }
+    
+    body.dark-mode .filepath {
+        color: #94a3b8;
+    }
+    
+    /* Бейджі типів */
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+    
+    .badge-json {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+    
+    .badge-sql {
+        background: #dcfce7;
+        color: #166534;
+    }
+    
+    .badge-gz {
+        background: #fef3c7;
+        color: #92400e;
+    }
+    
+    body.dark-mode .badge-json {
+        background: #1e3a5f;
+        color: #93c5fd;
+    }
+    
+    body.dark-mode .badge-sql {
+        background: #0f2a1f;
+        color: #34d399;
+    }
+    
+    body.dark-mode .badge-gz {
+        background: #422b1a;
+        color: #fbbf24;
+    }
+    
+    /* Розмір та дата */
+    .file-size, .file-date {
+        color: #64748b;
+        font-size: 13px;
+        white-space: nowrap;
+    }
+    
+    body.dark-mode .file-size,
+    body.dark-mode .file-date {
+        color: #94a3b8;
+    }
+    
+    /* Кнопки дій */
+    .actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+    
+    .action-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 500;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: none;
+    }
+    
+    .action-download {
+        background: #3b82f6;
+        color: white;
+    }
+    
+    .action-download:hover {
+        background: #2563eb;
+    }
+    
+    .action-restore {
+        background: #10b981;
+        color: white;
+    }
+    
+    .action-restore:hover {
+        background: #059669;
+    }
+    
+    .action-delete {
+        background: #ef4444;
+        color: white;
+    }
+    
+    .action-delete:hover {
+        background: #dc2626;
+    }
+    
+    /* Пустий стан */
+    .empty-state {
+        text-align: center;
+        padding: 48px 20px;
+    }
+    
+    .empty-icon {
+        font-size: 48px;
+        color: #cbd5e1;
+        margin-bottom: 16px;
+    }
+    
+    .empty-state p {
+        color: #64748b;
+        margin-bottom: 20px;
+    }
+    
+    body.dark-mode .empty-icon {
+        color: #475569;
+    }
+    
+    body.dark-mode .empty-state p {
+        color: #94a3b8;
+    }
+    
+    /* Футер */
+    .card-footer {
+        padding: 14px 20px;
+        background: #fafbfc;
+        border-top: 1px solid #eef2f6;
+        font-size: 12px;
+        color: #64748b;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    body.dark-mode .card-footer {
+        background: #1e293b;
+        border-top-color: #334155;
+        color: #94a3b8;
+    }
+    
+    .footer-info {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+    
+    .total-size {
+        font-weight: 600;
+        color: #1e293b;
+    }
+    
+    body.dark-mode .total-size {
+        color: #f8fafc;
+    }
+    
+    /* Адаптивність */
+    @media (max-width: 1024px) {
+        .backup-table th,
+        .backup-table td {
+            padding: 12px;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .backup-actions {
+            flex-direction: column;
+        }
+        
+        .btn {
+            justify-content: center;
+        }
+        
+        .backup-table {
+            display: block;
+            overflow-x: auto;
+        }
+        
+        .actions {
+            flex-direction: column;
+        }
+        
+        .action-btn {
+            justify-content: center;
+        }
+        
+        .file-size,
+        .file-date {
+            white-space: normal;
+        }
+        
+        .card-footer {
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .footer-info {
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="backup-container">
+    <div class="backup-header">
+        <h1><i class="fas fa-database"></i> Резервне копіювання</h1>
+        <p>Створення та відновлення резервних копій бази даних та медіа-файлів</p>
+    </div>
+    
+    <div class="backup-actions">
+        <form method="post" action="{% url 'backup:create' %}" class="form-inline">
+            {% csrf_token %}
+            <input type="hidden" name="backup_type" value="full">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-database"></i> Повний бекап
+            </button>
+        </form>
+        <form method="post" action="{% url 'backup:create' %}" class="form-inline">
+            {% csrf_token %}
+            <input type="hidden" name="backup_type" value="db">
+            <button type="submit" class="btn btn-success">
+                <i class="fas fa-table"></i> SQL дамп
+            </button>
+        </form>
+        <form method="post" action="{% url 'backup:create' %}" class="form-inline">
+            {% csrf_token %}
+            <input type="hidden" name="backup_type" value="media">
+            <button type="submit" class="btn btn-warning">
+                <i class="fas fa-image"></i> Бекап медіа
+            </button>
+        </form>
+    </div>
+    
+    <div class="backup-card">
+        <div class="card-header">
+            <h3><i class="fas fa-list"></i> Список бекапів</h3>
+            <div class="stat-badge">
+                <i class="fas fa-file-alt"></i> Всього: {{ backups|length }}
+            </div>
+        </div>
+        <div class="card-body">
+            {% if backups %}
+            <table class="backup-table">
+                <thead>
+                    <tr>
+                        <th>Назва файлу</th>
+                        <th>Тип</th>
+                        <th>Розмір</th>
+                        <th>Дата створення</th>
+                        <th>Дії</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for backup in backups %}
+                    <tr>
+                        <td>
+                            <div class="filename">
+                                <i class="fas fa-{% if backup.type == 'json' %}code{% elif backup.type == 'sql' %}database{% else %}archive{% endif %}"></i>
+                                {{ backup.name }}
+                            </div>
+                            <div class="filepath">{{ backup.path }}</div>
+                        </td>
+                        <td>
+                            <span class="badge badge-{{ backup.type }}">
+                                <i class="fas fa-{% if backup.type == 'json' %}braces{% elif backup.type == 'sql' %}table{% else %}file-archive{% endif %}"></i>
+                                {{ backup.type|upper }}
+                            </span>
+                        </td>
+                        <td class="file-size">{{ backup.size|filesizeformat }}</td>
+                        <td class="file-date">{{ backup.created|date:"d.m.Y H:i:s" }}</td>
+                        <td class="actions">
+                            <a href="{% url 'backup:download' backup.name %}" class="action-btn action-download" title="Завантажити">
+                                <i class="fas fa-download"></i> Завантажити
+                            </a>
+                            <form method="post" action="{% url 'backup:restore' backup.name %}" class="form-inline" onsubmit="return confirmRestore(event)">
+                                {% csrf_token %}
+                                <button type="submit" class="action-btn action-restore" title="Відновити">
+                                    <i class="fas fa-undo"></i> Відновити
+                                </button>
+                            </form>
+                            <form method="post" action="{% url 'backup:delete' backup.name %}" class="form-inline" onsubmit="return confirm('Ви впевнені, що хочете видалити бекап {{ backup.name }}?')">
+                                {% csrf_token %}
+                                <button type="submit" class="action-btn action-delete" title="Видалити">
+                                    <i class="fas fa-trash"></i> Видалити
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-icon"><i class="fas fa-folder-open"></i></div>
+                <p>Немає збережених бекапів</p>
+                <small class="text-muted">Створіть перший бекап за допомогою кнопок вище</small>
+            </div>
+            {% endif %}
+        </div>
+        <div class="card-footer">
+            <div class="footer-info">
+                <i class="fas fa-info-circle"></i>
+                <span>Бекапи зберігаються в папці <code>backups/</code></span>
+            </div>
+            {% if backups %}
+            <div class="footer-info">
+                <i class="fas fa-hdd"></i>
+                <span>Загальний розмір: <strong class="total-size">{{ total_size|default:"0"|filesizeformat }}</strong></span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmRestore(event) {
+    event.preventDefault();
+    if (confirm('Увага! Відновлення бази даних видалить всі поточні дані та замінить їх даними з бекапу.\n\nЦю дію не можна скасувати!\n\nПродовжити?')) {
+        event.target.submit();
+    }
+    return false;
+}
+</script>
+{% endblock %}

@@ -1,0 +1,277 @@
+{% extends "admin/base_sidebar.html" %}
+{% load static %}
+
+{% block title %}{% if original %}Редагування категорії{% else %}Нова категорія{% endif %} - TechShop Admin{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'admin/css/category-form.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="category-form-container">
+    <!-- Верхня панель з хлібними крихтами -->
+    <div class="breadcrumb-bar">
+        <div class="breadcrumb-items">
+            <a href="{% url 'admin:index' %}">Головна</a>
+            <i class="fas fa-chevron-right"></i>
+            <a href="../">Категорії</a>
+            <i class="fas fa-chevron-right"></i>
+            <span class="current">{% if original %}Редагування: {{ original.name }}{% else %}Нова категорія{% endif %}</span>
+        </div>
+        <div>
+            <a href="../" class="btn-back">
+                <i class="fas fa-arrow-left"></i> Назад до списку
+            </a>
+        </div>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" id="categoryForm">
+        {% csrf_token %}
+        
+        <div class="form-grid">
+            <!-- Ліва колонка - основні поля -->
+            <div class="form-main">
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-info-circle"></i> Основна інформація</h3>
+                    </div>
+                    <div class="card-body">
+                        {% if form.errors %}
+                        <div class="error-message">
+                            <i class="fas fa-exclamation-triangle"></i> Будь ласка, виправте помилки:
+                            <ul>
+                                {% for field in form %}
+                                    {% for error in field.errors %}
+                                        <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="field-group">
+                            <label for="{{ form.name.id_for_label }}">Назва категорії <span class="required">*</span></label>
+                            {{ form.name }}
+                            <div class="field-help">
+                                <i class="fas fa-info-circle"></i> Наприклад: "Ноутбуки", "Комплектуючі", "Периферія"
+                            </div>
+                        </div>
+                        
+                        <div class="field-row-2">
+                            <div class="field-group">
+                                <label for="{{ form.slug.id_for_label }}">Slug (URL-ідентифікатор)</label>
+                                <div class="slug-wrapper">
+                                    {{ form.slug }}
+                                    <button type="button" class="btn-generate-slug" id="generateSlugBtn" title="Згенерувати з назви">
+                                        <i class="fas fa-magic"></i>
+                                    </button>
+                                </div>
+                                <div class="field-help">
+                                    <i class="fas fa-info-circle"></i> Використовується в URL. Залиште порожнім для автоматичної генерації
+                                </div>
+                            </div>
+                            
+                            <div class="field-group">
+                                <label for="{{ form.parent.id_for_label }}">Батьківська категорія</label>
+                                {{ form.parent }}
+                                <div class="field-help">
+                                    <i class="fas fa-sitemap"></i> Виберіть категорію для створення вкладеності
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="field-group">
+                            <label for="{{ form.description.id_for_label }}">Опис категорії</label>
+                            {{ form.description }}
+                            <div class="field-help">
+                                <i class="fas fa-info-circle"></i> Короткий опис для SEO та відображення на сторінці категорії
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Статистика категорії (якщо редагуємо) -->
+                {% if original %}
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-chart-line"></i> Статистика категорії</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="stats-grid-3">
+                            <div class="stat-item">
+                                <div class="stat-value">{{ original.get_descendant_count|default:"0" }}</div>
+                                <div class="stat-label">Підкатегорій</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">{{ original.products.count }}</div>
+                                <div class="stat-label">Товарів</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">{{ original.level }}</div>
+                                <div class="stat-label">Рівень вкладеності</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Права колонка - зображення та інше -->
+            <div class="form-sidebar">
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-image"></i> Зображення категорії</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="image-upload-area" id="imageUploadArea">
+                            <div class="image-preview" id="imagePreview">
+                                {% if original and original.image %}
+                                <img src="{{ original.image.url }}" alt="{{ original.name }}" id="previewImg">
+                                {% else %}
+                                <div class="image-placeholder">
+                                    <i class="fas fa-folder-open"></i>
+                                    <span>Немає зображення</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                            {{ form.image }}
+                            <div class="field-help">
+                                <i class="fas fa-info-circle"></i> Рекомендований розмір: 300x300px. Підтримуються JPG, PNG, WebP
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-cog"></i> Дії</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="action-buttons">
+                            <button type="submit" class="btn-save">
+                                <i class="fas fa-save"></i> Зберегти зміни
+                            </button>
+                            <button type="button" class="btn-preview" id="previewBtn" {% if not original %}disabled{% endif %}>
+                                <i class="fas fa-eye"></i> Переглянути на сайті
+                            </button>
+                            {% if original %}
+                            <a href="delete/" class="btn-delete" onclick="return confirmDelete()">
+                                <i class="fas fa-trash"></i> Видалити категорію
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                {% if original %}
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-clock"></i> Інформація</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="info-line">
+                            <span class="info-label">Створено:</span>
+                            <span class="info-value">{{ original.created_at|date:"d.m.Y H:i" }}</span>
+                        </div>
+                        <div class="info-line">
+                            <span class="info-label">Оновлено:</span>
+                            <span class="info-value">{{ original.updated_at|date:"d.m.Y H:i" }}</span>
+                        </div>
+                        <div class="info-line">
+                            <span class="info-label">ID:</span>
+                            <span class="info-value">{{ original.id }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    // Підтвердження видалення
+    function confirmDelete() {
+        return confirm('Увага! Видалення категорії призведе до видалення всіх підкатегорій та товарів у них.\n\nВи впевнені, що хочете видалити категорію?');
+    }
+    
+    // Генерація slug
+    const nameInput = document.getElementById('{{ form.name.id_for_label }}');
+    const slugInput = document.getElementById('{{ form.slug.id_for_label }}');
+    const generateBtn = document.getElementById('generateSlugBtn');
+    
+    function generateSlug(text) {
+        if (!text) return '';
+        return text
+            .toLowerCase()
+            .trim()
+            .replace(/[^a-zа-яіїєґ0-9\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-')
+            .replace(/^-+|-+$/g, '')
+            .substring(0, 100);
+    }
+    
+    if (generateBtn && nameInput) {
+        generateBtn.addEventListener('click', function() {
+            if (nameInput.value) {
+                slugInput.value = generateSlug(nameInput.value);
+                slugInput.classList.add('highlight');
+                setTimeout(() => slugInput.classList.remove('highlight'), 1000);
+            }
+        });
+    }
+    
+    if (nameInput && slugInput) {
+        nameInput.addEventListener('blur', function() {
+            if (!slugInput.value) {
+                slugInput.value = generateSlug(this.value);
+            }
+        });
+    }
+    
+    // Попередній перегляд зображення
+    const imageInput = document.querySelector('#id_image');
+    const previewImg = document.getElementById('previewImg');
+    const imagePlaceholder = document.querySelector('.image-placeholder');
+    
+    if (imageInput) {
+        imageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    if (previewImg) {
+                        previewImg.src = event.target.result;
+                        previewImg.style.display = 'block';
+                        if (imagePlaceholder) imagePlaceholder.style.display = 'none';
+                    } else if (imagePlaceholder) {
+                        const img = document.createElement('img');
+                        img.src = event.target.result;
+                        img.id = 'previewImg';
+                        img.style.maxWidth = '100%';
+                        img.style.maxHeight = '150px';
+                        imagePlaceholder.parentNode.insertBefore(img, imagePlaceholder);
+                        imagePlaceholder.style.display = 'none';
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+    
+    // Перегляд на сайті
+    const previewBtn = document.getElementById('previewBtn');
+    if (previewBtn) {
+        previewBtn.addEventListener('click', function() {
+            const slug = slugInput?.value || generateSlug(nameInput?.value);
+            if (slug) {
+                window.open(`/catalog/${slug}/`, '_blank');
+            } else {
+                alert('Збережіть категорію перед переглядом');
+            }
+        });
+    }
+</script>
+{% endblock %}

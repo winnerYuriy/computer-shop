@@ -22,20 +22,18 @@ CSRF_TRUSTED_ORIGINS = ['http://localhost:8000', 'http://127.0.0.1:8000']
 # Application definition
 
 INSTALLED_APPS = [
-    'admin_config.apps.TechShopAdminConfig',
+    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.sitemaps',
-  
-    #my app
     'mptt',
-    'shop', 
+    'shop',  
     'cart',
+    'backup',
     'payment',
-    'accounts', 
+    'accounts',
 ]
 
 MIDDLEWARE = [
@@ -58,6 +56,7 @@ TEMPLATES = [
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
+                'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
@@ -68,6 +67,16 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'config.wsgi.application'
+
+# Кастомний AdminSite (опціонально)
+from django.contrib.admin import AdminSite
+
+class CustomAdminSite(AdminSite):
+    site_header = 'TechShop Admin'
+    site_title = 'TechShop Admin'
+    index_title = 'Дашборд'
+
+admin_site = CustomAdminSite(name='myadmin')
 
 
 # Database

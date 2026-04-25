@@ -1,3 +1,4 @@
+<!-- templates/cart/checkout.html -->
 {% extends 'base.html' %}
 
 {% block title %}Оформлення замовлення - TechShop{% endblock %}
@@ -6,56 +7,137 @@
 <div class="row">
     <div class="col-lg-8">
         <h1 class="mb-4">Оформлення замовлення</h1>
+        
         <form method="post" id="checkoutForm">
             {% csrf_token %}
+            
             <div class="card mb-4">
-                <div class="card-header bg-white"><h5 class="mb-0">Контактні дані</h5></div>
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Контактні дані</h5>
+                </div>
                 <div class="card-body">
-                    <div class="mb-3"><label class="form-label required">ПІБ</label><input type="text" name="full_name" class="form-control" required></div>
-                    <div class="mb-3"><label class="form-label required">Телефон</label><input type="tel" name="phone" class="form-control" required></div>
-                    <div class="mb-3"><label class="form-label required">Email</label><input type="email" name="email" class="form-control" required></div>
+                    <div class="mb-3">
+                        <label for="full_name" class="form-label required">ПІБ</label>
+                        <input type="text" class="form-control" id="full_name" name="full_name" 
+                               value="{{ form_data.full_name|default:initial_data.full_name|default:'' }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="phone" class="form-label required">Телефон</label>
+                        <input type="tel" class="form-control" id="phone" name="phone" 
+                               value="{{ form_data.phone|default:initial_data.phone|default:'' }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label required">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" 
+                               value="{{ form_data.email|default:initial_data.email|default:'' }}" required>
+                    </div>
                 </div>
             </div>
+            
             <div class="card mb-4">
-                <div class="card-header bg-white"><h5 class="mb-0">Доставка</h5></div>
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Доставка</h5>
+                </div>
                 <div class="card-body">
                     <div class="mb-3">
                         <label class="form-label required">Спосіб доставки</label>
-                        <div class="form-check"><input class="form-check-input" type="radio" name="delivery_method" value="nova_post" checked><label class="form-check-label">Нова Пошта (відділення)</label></div>
-                        <div class="form-check"><input class="form-check-input" type="radio" name="delivery_method" value="courier"><label class="form-check-label">Кур'єр по Києву</label></div>
-                        <div class="form-check"><input class="form-check-input" type="radio" name="delivery_method" value="pickup"><label class="form-check-label">Самовивіз (Київ, вул. Технічна, 1)</label></div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="delivery_method" id="nova_post" value="nova_post" 
+                                   {% if form_data.delivery_method == 'nova_post' or not form_data.delivery_method %}checked{% endif %}>
+                            <label class="form-check-label" for="nova_post">Нова Пошта (за адресою відділення)</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="delivery_method" id="courier" value="courier"
+                                   {% if form_data.delivery_method == 'courier' %}checked{% endif %}>
+                            <label class="form-check-label" for="courier">Кур'єр по Києву</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="delivery_method" id="pickup" value="pickup"
+                                   {% if form_data.delivery_method == 'pickup' %}checked{% endif %}>
+                            <label class="form-check-label" for="pickup">Самовивіз (м. Київ, вул. Технічна, 1)</label>
+                        </div>
                     </div>
+                    
                     <div id="novaPostFields">
-                        <div class="mb-3"><label class="form-label">Місто</label><input type="text" name="city" class="form-control"></div>
-                        <div class="mb-3"><label class="form-label">Відділення Нової Пошти</label><input type="text" name="nova_post_office" class="form-control"></div>
+                        <div class="mb-3">
+                            <label for="city" class="form-label">Місто</label>
+                            <input type="text" class="form-control" id="city" name="city" 
+                                   value="{{ form_data.city|default:initial_data.city|default:'' }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="nova_post_office" class="form-label">Відділення Нової Пошти</label>
+                            <input type="text" class="form-control" id="nova_post_office" name="nova_post_office" 
+                                   value="{{ form_data.nova_post_office|default:'' }}">
+                        </div>
                     </div>
-                    <div id="addressField" style="display:none;"><div class="mb-3"><label class="form-label">Адреса доставки</label><input type="text" name="address" class="form-control"></div></div>
-                    <div class="mb-3"><label class="form-label">Коментар</label><textarea name="comment" class="form-control" rows="2"></textarea></div>
+                    
+                    <div id="addressField" style="display: none;">
+                        <div class="mb-3">
+                            <label for="address" class="form-label">Адреса доставки</label>
+                            <input type="text" class="form-control" id="address" name="address" 
+                                   value="{{ form_data.address|default:initial_data.address|default:'' }}">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="comment" class="form-label">Коментар до замовлення</label>
+                        <textarea class="form-control" id="comment" name="comment" rows="3">{{ form_data.comment|default:'' }}</textarea>
+                    </div>
                 </div>
             </div>
+            
             <button type="submit" class="btn btn-primary btn-lg w-100">Продовжити до оплати</button>
         </form>
     </div>
+    
     <div class="col-lg-4">
         <div class="cart-summary">
             <h5 class="mb-3">Ваше замовлення</h5>
             {% for item in cart %}
-            <div class="d-flex justify-content-between mb-2"><span>{{ item.product.title }} x {{ item.quantity }}</span><span>{{ item.total_price }}₴</span></div>
+            <div class="d-flex justify-content-between mb-2">
+                <span>{{ item.product.title }} x {{ item.quantity }}</span>
+                <span>{{ item.total_price|floatformat:0 }}₴</span>
+            </div>
             {% endfor %}
             <hr>
-            <div class="d-flex justify-content-between fw-bold"><span>Всього:</span><span>{{ cart.get_total_price }}₴</span></div>
+            <div class="d-flex justify-content-between fw-bold">
+                <span>Всього:</span>
+                <span>{{ cart.get_total_price|floatformat:0 }}₴</span>
+            </div>
         </div>
     </div>
 </div>
+
 <script>
-    const radios = document.querySelectorAll('input[name="delivery_method"]');
-    const novaDiv = document.getElementById('novaPostFields');
-    const addressDiv = document.getElementById('addressField');
-    radios.forEach(r => r.addEventListener('change', function() {
-        if (this.value === 'courier') { novaDiv.style.display = 'none'; addressDiv.style.display = 'block'; }
-        else if (this.value === 'pickup') { novaDiv.style.display = 'none'; addressDiv.style.display = 'none'; }
-        else { novaDiv.style.display = 'block'; addressDiv.style.display = 'none'; }
-    }));
+    // Показуємо/ховаємо поля залежно від способу доставки
+    const deliveryRadios = document.querySelectorAll('input[name="delivery_method"]');
+    const novaPostFields = document.getElementById('novaPostFields');
+    const addressField = document.getElementById('addressField');
+    
+    deliveryRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.value === 'courier') {
+                novaPostFields.style.display = 'none';
+                addressField.style.display = 'block';
+            } else if (this.value === 'pickup') {
+                novaPostFields.style.display = 'none';
+                addressField.style.display = 'none';
+            } else {
+                novaPostFields.style.display = 'block';
+                addressField.style.display = 'none';
+            }
+        });
+    });
 </script>
-<style>.required:after { content: " *"; color: red; } .cart-summary { position: sticky; top: 100px; }</style>
+
+<style>
+    .required:after {
+        content: " *";
+        color: red;
+    }
+    .cart-summary {
+        position: sticky;
+        top: 100px;
+    }
+</style>
 {% endblock %}

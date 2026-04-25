@@ -93,10 +93,10 @@ main {
 }
 
 .product-card-img {
-    padding: 1rem;
+    padding: 2rem;
     background: #ffffff;
     text-align: center;
-    height: 180px;
+    height: 240px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -104,7 +104,7 @@ main {
 
 .product-card-img img {
     max-width: 100%;
-    max-height: 140px;
+    max-height: 240px;
     object-fit: contain;
 }
 
@@ -128,16 +128,25 @@ main {
     color: #3b82f6;
 }
 
-.product-card-category {
-    font-size: 0.7rem;
-    color: #6b7280;
-    margin-bottom: 0.5rem;
+.product-card-price {
+    display: flex;
+    align-items: baseline;
+    justify-content: flex-end;
+    gap: 6px;
+    flex-wrap: wrap;
 }
 
-.product-card-price {
-    font-size: 1rem;
-    font-weight: 700;
+.product-card-price .current-price {
+    font-size: 1.625rem;  /* 26px */
+    font-weight: 600;
     color: #111827;
+    line-height: 1.2;
+}
+
+.product-card-price .current-price .currency {
+    font-size: 1.25rem;  /* 20px */
+    font-weight: 500;
+    margin-left: 2px;
 }
 
 .product-card-old-price {
@@ -147,6 +156,7 @@ main {
     margin-right: 8px;
     font-weight: normal;
 }
+
 
 /* Бейджі */
 .badge-new {
@@ -203,6 +213,10 @@ main {
 
 .btn-secondary:hover {
     background-color: #4b5563;
+}
+
+.btn-pdf {
+    background: #d2f0c9;
 }
 
 /* Кошик */
@@ -304,7 +318,7 @@ main {
 
 /* Сторінка товару - обмеження ширини зображення */
 .product-gallery {
-    max-width: 450px;
+    max-width: 550px;
     margin: 0 auto;
 }
 
@@ -314,14 +328,14 @@ main {
     cursor: pointer;
     background: #ffffff;
     text-align: center;
-    max-height: 350px;
+    max-height: 450px;
 }
 
 .main-image img {
     width: 100%;
-    max-width: 350px;
+    max-width: 550px;
     height: auto;
-    max-height: 300px;
+    max-height: 450px;
     object-fit: contain;
     display: block;
     margin: 0 auto;
@@ -443,7 +457,7 @@ main {
 .breadcrumb {
     background: transparent;
     padding: 0;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
 }
 
 .breadcrumb-item a {
@@ -478,11 +492,11 @@ main {
     }
     
     .product-card-img {
-        height: 150px;
+        height: 200px;
     }
     
     .product-card-img img {
-        max-height: 110px;
+        max-height: 250px;
     }
     
     .thumbnail {
@@ -510,8 +524,8 @@ main {
     }
     
     .main-image img {
-        max-width: 320px;
-        max-height: 280px;
+        max-width: 550px;
+        max-height: 450px;
     }
 }
 
@@ -526,5 +540,101 @@ main {
     .cart-table td {
         padding: 0.5rem;
         font-size: 0.875rem;
+    }
+}
+
+/* ============================================================
+   СТИЛІ ДЛЯ ЦІНИ В ДЕТАЛЬНІЙ СТОРІНЦІ
+   ============================================================ */
+
+.product-price-wrapper {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 20px 0;
+}
+
+.product-price-wrapper .current-price {
+    font-size: 2rem;      /* 32px */
+    font-weight: 700;
+    color: #111827;
+    line-height: 1.2;
+    text-decoration: none;
+}
+
+.product-price-wrapper .current-price .currency {
+    font-size: 1.5rem;    /* 24px */
+    font-weight: 600;
+    margin-left: 2px;
+}
+
+.product-price-wrapper .old-price {
+    font-size: 1rem;
+    color: #9ca3af;
+    text-decoration: line-through;
+    font-weight: normal;
+}
+
+.product-price-wrapper .old-price .currency {
+    font-size: 0.9rem;
+}
+
+.product-price-wrapper .discount-badge {
+    background: #ef4444;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 24px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+/* ============================================================
+   СТИЛІ ДЛЯ ЦІНИ В КАРТЦІ ТОВАРУ
+   ============================================================ */
+
+.product-card-price {
+    display: flex;
+    align-items: baseline;
+    justify-content: flex-end;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+}
+
+.product-card-price .current-price {
+    font-size: 1.375rem;  /* 22px */
+    font-weight: 700;
+    color: #111827;
+    line-height: 1.2;
+    text-decoration: none;
+}
+
+.product-card-price .current-price .currency {
+    font-size: 1rem;      /* 16px */
+    font-weight: 600;
+    margin-left: 2px;
+}
+
+.product-card-old-price {
+    font-size: 0.8rem;
+    color: #9ca3af;
+    text-decoration: line-through;
+    margin-right: 8px;
+    font-weight: normal;
+}
+
+/* Адаптивність для мобільних пристроїв */
+@media (max-width: 768px) {
+    .product-price-wrapper .current-price {
+        font-size: 1.5rem;  /* 24px */
+    }
+    
+    .product-price-wrapper .current-price .currency {
+        font-size: 1.125rem; /* 18px */
+    }
+    
+    .product-card-price .current-price {
+        font-size: 1.125rem; /* 18px */
     }
 }

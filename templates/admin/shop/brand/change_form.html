@@ -1,0 +1,495 @@
+{% extends "admin/base_sidebar.html" %}
+{% load static %}
+
+{% block title %}{% if original %}Редагування бренду{% else %}Новий бренд{% endif %} - TechShop Admin{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+    .brand-form-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .breadcrumb-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        padding: 12px 16px;
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #eef2f6;
+    }
+    
+    .breadcrumb-items {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+    }
+    
+    .breadcrumb-items a {
+        color: #3b82f6;
+        text-decoration: none;
+    }
+    
+    .breadcrumb-items .current {
+        color: #1e293b;
+        font-weight: 600;
+    }
+    
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        background: #f1f5f9;
+        border-radius: 8px;
+        text-decoration: none;
+        color: #1e293b;
+        font-size: 13px;
+    }
+    
+    .card {
+        background: white;
+        border-radius: 16px;
+        border: 1px solid #eef2f6;
+        overflow: hidden;
+        margin-bottom: 24px;
+    }
+    
+    .card-header {
+        padding: 16px 20px;
+        background: #f8fafc;
+        border-bottom: 1px solid #eef2f6;
+    }
+    
+    .card-header h3 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .card-body {
+        padding: 20px;
+    }
+    
+    .field-group {
+        margin-bottom: 20px;
+    }
+    
+    .field-group label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #1e293b;
+        font-size: 14px;
+    }
+    
+    .field-group .required {
+        color: #ef4444;
+    }
+    
+    .field-group input,
+    .field-group select,
+    .field-group textarea {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+    
+    .field-group input:focus,
+    .field-group select:focus,
+    .field-group textarea:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    
+    .field-help {
+        font-size: 12px;
+        color: #64748b;
+        margin-top: 6px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    
+    .slug-wrapper {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .slug-wrapper input {
+        flex: 1;
+    }
+    
+    .btn-generate-slug {
+        padding: 0 12px;
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .btn-generate-slug:hover {
+        background: #e2e8f0;
+    }
+    
+    .image-upload-area {
+        text-align: center;
+    }
+    
+    .image-preview {
+        margin-bottom: 16px;
+        background: #f8fafc;
+        border-radius: 12px;
+        overflow: hidden;
+        min-height: 150px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .image-preview img {
+        max-width: 100%;
+        max-height: 150px;
+        object-fit: contain;
+    }
+    
+    .image-placeholder {
+        padding: 40px;
+        text-align: center;
+        color: #94a3b8;
+    }
+    
+    .image-placeholder i {
+        font-size: 48px;
+        margin-bottom: 8px;
+        display: block;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+    
+    .btn-save, .btn-delete {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: none;
+        text-decoration: none;
+    }
+    
+    .btn-save {
+        background: #10b981;
+        color: white;
+    }
+    
+    .btn-save:hover {
+        background: #059669;
+        transform: translateY(-1px);
+    }
+    
+    .btn-delete {
+        background: #ef4444;
+        color: white;
+    }
+    
+    .btn-delete:hover {
+        background: #dc2626;
+        transform: translateY(-1px);
+    }
+    
+    .error-message {
+        background: #fee2e2;
+        color: #991b1b;
+        padding: 12px 16px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
+    
+    .error-message ul {
+        margin: 8px 0 0 20px;
+    }
+    
+    .info-line {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #eef2f6;
+    }
+    
+    .info-line:last-child {
+        border-bottom: none;
+    }
+    
+    .info-label {
+        font-weight: 600;
+        color: #64748b;
+    }
+    
+    .info-value {
+        color: #1e293b;
+    }
+    
+    /* Темна тема */
+    body.dark-mode .card {
+        background: #1e293b;
+        border-color: #334155;
+    }
+    
+    body.dark-mode .card-header {
+        background: #334155;
+        border-bottom-color: #475569;
+    }
+    
+    body.dark-mode .field-group label {
+        color: #e2e8f0;
+    }
+    
+    body.dark-mode .field-group input,
+    body.dark-mode .field-group select,
+    body.dark-mode .field-group textarea {
+        background: #334155;
+        border-color: #475569;
+        color: #f8fafc;
+    }
+    
+    body.dark-mode .breadcrumb-bar {
+        background: #1e293b;
+        border-color: #334155;
+    }
+    
+    body.dark-mode .breadcrumb-items .current {
+        color: #f8fafc;
+    }
+    
+    body.dark-mode .btn-back {
+        background: #334155;
+        color: #e2e8f0;
+    }
+    
+    body.dark-mode .info-line {
+        border-bottom-color: #334155;
+    }
+    
+    body.dark-mode .info-value {
+        color: #e2e8f0;
+    }
+    
+    .highlight {
+        background-color: #fef3c7 !important;
+        transition: background-color 0.3s;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="brand-form-container">
+    <!-- Хлібні крихти -->
+    <div class="breadcrumb-bar">
+        <div class="breadcrumb-items">
+            <a href="{% url 'admin:index' %}">Головна</a>
+            <i class="fas fa-chevron-right"></i>
+            <a href="../">Бренди</a>
+            <i class="fas fa-chevron-right"></i>
+            <span class="current">{% if original %}Редагування: {{ original.name }}{% else %}Новий бренд{% endif %}</span>
+        </div>
+        <div>
+            <a href="../" class="btn-back">
+                <i class="fas fa-arrow-left"></i> Назад до списку
+            </a>
+        </div>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" id="brandForm">
+        {% csrf_token %}
+        
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fas fa-info-circle"></i> Основна інформація</h3>
+            </div>
+            <div class="card-body">
+                {% if form.errors %}
+                <div class="error-message">
+                    <i class="fas fa-exclamation-triangle"></i> Будь ласка, виправте помилки:
+                    <ul>
+                        {% for field in form %}
+                            {% for error in field.errors %}
+                                <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+                
+                <div class="field-group">
+                    <label for="{{ form.name.id_for_label }}">Назва бренду <span class="required">*</span></label>
+                    {{ form.name }}
+                    <div class="field-help">
+                        <i class="fas fa-info-circle"></i> Наприклад: "Apple", "Samsung", "Xiaomi"
+                    </div>
+                </div>
+                
+                <div class="field-group">
+                    <label for="{{ form.slug.id_for_label }}">Slug (URL-ідентифікатор)</label>
+                    <div class="slug-wrapper">
+                        {{ form.slug }}
+                        <button type="button" class="btn-generate-slug" id="generateSlugBtn" title="Згенерувати з назви">
+                            <i class="fas fa-magic"></i>
+                        </button>
+                    </div>
+                    <div class="field-help">
+                        <i class="fas fa-info-circle"></i> Використовується в URL. Залиште порожнім для автоматичної генерації
+                    </div>
+                </div>
+                
+                <div class="field-group">
+                    <label for="{{ form.logo.id_for_label }}">Логотип бренду</label>
+                    <div class="image-upload-area">
+                        <div class="image-preview" id="imagePreview">
+                            {% if original and original.logo %}
+                            <img src="{{ original.logo.url }}" alt="{{ original.name }}" id="previewImg">
+                            {% else %}
+                            <div class="image-placeholder">
+                                <i class="fas fa-image"></i>
+                                <span>Немає логотипу</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {{ form.logo }}
+                        <div class="field-help">
+                            <i class="fas fa-info-circle"></i> Рекомендований розмір: 200x200px. Підтримуються JPG, PNG, SVG, WebP
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fas fa-cog"></i> Дії</h3>
+            </div>
+            <div class="card-body">
+                <div class="action-buttons">
+                    <button type="submit" class="btn-save">
+                        <i class="fas fa-save"></i> Зберегти
+                    </button>
+                    {% if original %}
+                    <a href="delete/" class="btn-delete" onclick="return confirm('Ви впевнені, що хочете видалити бренд «{{ original.name }}»?')">
+                        <i class="fas fa-trash"></i> Видалити
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        {% if original %}
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fas fa-clock"></i> Інформація</h3>
+            </div>
+            <div class="card-body">
+                <div class="info-line">
+                    <span class="info-label">Створено:</span>
+                    <span class="info-value">{{ original.created_at|date:"d.m.Y H:i" }}</span>
+                </div>
+                <div class="info-line">
+                    <span class="info-label">Оновлено:</span>
+                    <span class="info-value">{{ original.updated_at|date:"d.m.Y H:i" }}</span>
+                </div>
+                <div class="info-line">
+                    <span class="info-label">ID:</span>
+                    <span class="info-value">{{ original.id }}</span>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </form>
+</div>
+
+<script>
+    // Генерація slug
+    const nameInput = document.getElementById('{{ form.name.id_for_label }}');
+    const slugInput = document.getElementById('{{ form.slug.id_for_label }}');
+    const generateBtn = document.getElementById('generateSlugBtn');
+    
+    function generateSlug(text) {
+        if (!text) return '';
+        return text
+            .toLowerCase()
+            .trim()
+            .replace(/[^a-zа-яіїєґ0-9\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-')
+            .replace(/^-+|-+$/g, '')
+            .substring(0, 100);
+    }
+    
+    if (generateBtn && nameInput) {
+        generateBtn.addEventListener('click', function() {
+            if (nameInput.value) {
+                slugInput.value = generateSlug(nameInput.value);
+                slugInput.classList.add('highlight');
+                setTimeout(() => slugInput.classList.remove('highlight'), 1000);
+            }
+        });
+    }
+    
+    if (nameInput && slugInput) {
+        nameInput.addEventListener('blur', function() {
+            if (!slugInput.value) {
+                slugInput.value = generateSlug(this.value);
+            }
+        });
+    }
+    
+    // Попередній перегляд зображення
+    const imageInput = document.querySelector('#id_logo');
+    const previewImg = document.getElementById('previewImg');
+    const imagePlaceholder = document.querySelector('.image-placeholder');
+    
+    if (imageInput) {
+        imageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    if (previewImg) {
+                        previewImg.src = event.target.result;
+                        previewImg.style.display = 'block';
+                        if (imagePlaceholder) imagePlaceholder.style.display = 'none';
+                    } else if (imagePlaceholder) {
+                        const img = document.createElement('img');
+                        img.src = event.target.result;
+                        img.id = 'previewImg';
+                        img.style.maxWidth = '100%';
+                        img.style.maxHeight = '150px';
+                        imagePlaceholder.parentNode.insertBefore(img, imagePlaceholder);
+                        imagePlaceholder.style.display = 'none';
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+</script>
+{% endblock %}

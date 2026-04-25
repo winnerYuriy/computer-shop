@@ -16,3 +16,7 @@
 2026-04-24 03:44:00,256 - INFO - admin_views - Підсумок імпорту: +400/~0/!0
 2026-04-24 03:44:00,256 - INFO - admin_views - Зміни цін: +0/-0
 2026-04-24 03:44:00,256 - ERROR - admin_views - Помилка імпорту: 'summary'
+2026-04-25 18:49:12,970 - ERROR - admin_views - Помилка імпорту: `Import openpyxl` failed.  Use pip or conda to install the openpyxl package.
+2026-04-25 18:49:39,956 - ERROR - admin_views - Помилка імпорту: `Import openpyxl` failed.  Use pip or conda to install the openpyxl package.
+2026-04-25 18:51:34,035 - ERROR - admin_views - Помилка імпорту: `Import openpyxl` failed.  Use pip or conda to install the openpyxl package.
+2026-04-25 18:51:58,408 - ERROR - admin_views - Помилка імпорту: `Import openpyxl` failed.  Use pip or conda to install the openpyxl package.

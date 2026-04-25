@@ -1,0 +1,158 @@
+{% extends "admin/base_sidebar.html" %}
+{% load static %}
+
+{% block title %}Юридичні особи - TechShop Admin{% endblock %}
+
+{% block content %}
+<div class="data-card">
+    <div class="data-card-header">
+        <h3><i class="fas fa-building"></i> Юридичні особи</h3>
+        <a href="add/" class="btn btn-primary"><i class="fas fa-plus"></i> Додати юридичну особу</a>
+    </div>
+
+    <div class="filter-bar">
+        <div class="filter-group">
+            <label>Пошук</label>
+            <input type="text" id="search-input" placeholder="Назва, ЄДРПОУ, телефон...">
+        </div>
+        <div class="filter-group">
+            <label>Статус</label>
+            <select id="status-filter">
+                <option value="">Всі</option>
+                <option value="active">Активні</option>
+                <option value="inactive">Неактивні</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>Платник ПДВ</label>
+            <select id="vat-filter">
+                <option value="">Всі</option>
+                <option value="yes">Платник ПДВ</option>
+                <option value="no">Не платник ПДВ</option>
+            </select>
+        </div>
+    </div>
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>ЄДРПОУ</th>
+                <th>Назва</th>
+                <th>Телефон</th>
+                <th>Email</th>
+                <th>Платник ПДВ</th>
+                <th>Статус</th>
+                <th>Створено</th>
+                <th>Дії</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for entity in cl.result_list %}
+            <tr>
+                <td><strong>{{ entity.code_edrpou }}</strong></td>
+                <td>
+                    <a href="{{ entity.id }}/change/" style="font-weight: 500;">
+                        {{ entity.name }}
+                    </a>
+                    {% if entity.short_name %}
+                    <br><small class="text-muted">{{ entity.short_name }}</small>
+                    {% endif %}
+                 </a></td>
+                <td>{{ entity.phone|default:"—" }}<sup></td>
+                <td>{{ entity.email|default:"—" }}<sup></td>
+                <td>
+                    {% if entity.vat_number %}
+                    <span class="badge badge-success">Так</span>
+                    {% else %}
+                    <span class="badge badge-secondary">Ні</span>
+                    {% endif %}
+                 </a></td>
+                <td>
+                    {% if entity.is_active %}
+                    <span class="badge badge-success">Активний</span>
+                    {% else %}
+                    <span class="badge badge-secondary">Неактивний</span>
+                    {% endif %}
+                 </a></td>
+                <td>{{ entity.created_at|date:"d.m.Y" }}<sup></td>
+                <td>
+                    <a href="{{ entity.id }}/change/" class="btn btn-primary btn-sm" title="Редагувати">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    <a href="{{ entity.id }}/delete/" class="btn btn-danger btn-sm" title="Видалити" 
+                       onclick="return confirm('Ви впевнені, що хочете видалити юридичну особу «{{ entity.name }}»?');">
+                        <i class="fas fa-trash"></i>
+                    </a>
+                 </a></td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="8" style="text-align: center;">Немає юридичних осіб</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+    const searchInput = document.getElementById('search-input');
+    const statusFilter = document.getElementById('status-filter');
+    const vatFilter = document.getElementById('vat-filter');
+    
+    function filterTable() {
+        const searchValue = searchInput?.value.toLowerCase() || '';
+        const statusValue = statusFilter?.value || '';
+        const vatValue = vatFilter?.value || '';
+        const rows = document.querySelectorAll('.data-table tbody tr');
+        
+        rows.forEach(row => {
+            const code = row.querySelector('td:nth-child(1)')?.innerText.toLowerCase() || '';
+            const name = row.querySelector('td:nth-child(2) a')?.innerText.toLowerCase() || '';
+            const phone = row.querySelector('td:nth-child(3)')?.innerText.toLowerCase() || '';
+            const email = row.querySelector('td:nth-child(4)')?.innerText.toLowerCase() || '';
+            const vatCell = row.querySelector('td:nth-child(5)');
+            const statusCell = row.querySelector('td:nth-child(6)');
+            let show = true;
+            
+            if (searchValue && !code.includes(searchValue) && !name.includes(searchValue) && !phone.includes(searchValue) && !email.includes(searchValue)) {
+                show = false;
+            }
+            
+            if (statusValue && statusCell) {
+                const statusText = statusCell.innerText.toLowerCase();
+                if (statusValue === 'active' && !statusText.includes('активний')) show = false;
+                if (statusValue === 'inactive' && !statusText.includes('неактивний')) show = false;
+            }
+            
+            if (vatValue && vatCell) {
+                const vatText = vatCell.innerText.toLowerCase();
+                if (vatValue === 'yes' && vatText !== 'так') show = false;
+                if (vatValue === 'no' && vatText === 'так') show = false;
+            }
+            
+            row.style.display = show ? '' : 'none';
+        });
+    }
+    
+    searchInput?.addEventListener('keyup', filterTable);
+    statusFilter?.addEventListener('change', filterTable);
+    vatFilter?.addEventListener('change', filterTable);
+</script>
+
+<style>
+    .badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+    .badge-success { background: #d1fae5; color: #065f46; }
+    .badge-secondary { background: #f1f5f9; color: #475569; }
+    
+    body.dark-mode .badge-success { background: #0f2a1f; color: #34d399; }
+    body.dark-mode .badge-secondary { background: #334155; color: #94a3b8; }
+    .text-muted { color: #64748b; }
+    body.dark-mode .text-muted { color: #94a3b8; }
+</style>
+{% endblock %}

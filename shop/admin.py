@@ -2,20 +2,15 @@
 
 import os
 import logging
-from datetime import date
+from django import forms
 from django.contrib import admin, messages
 from django.utils.html import mark_safe
 from django.utils.text import slugify
-from django import forms
 from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import path, reverse
-from django.http import HttpResponse, JsonResponse
-from django.db import transaction
 from mptt.admin import DraggableMPTTAdmin
-from django.conf import settings
-from django.core.files.base import ContentFile
 from .models import (
-    Category, Brand, Promotion, Product, ProductImage,Property, 
+    AdminNotification, Category, Brand, Promotion, Product, ProductImage,Property, 
     PropertyValue, Order, Cart, Review, VisitLog, LegalEntity, 
     ServiceCategory, Service, Invoice, InvoiceItem
 )
@@ -155,6 +150,8 @@ def delete_all_images(modeladmin, request, queryset):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
+    change_list_template = 'admin/shop/product/change_list.html'
+    change_form_template = 'admin/shop/product/change_form.html'
     list_display = ('image_preview_with_delete', 'title', 'category', 'brand', 'price', 'quantity', 'available')
     list_filter = ('available', 'category', 'brand', HasMainImageFilter, 'created_at')
     search_fields = ('title', 'code', 'article')
@@ -281,31 +278,73 @@ class ProductAdmin(admin.ModelAdmin):
         return super().change_view(request, object_id, form_url, extra_context=extra_context)
 
 
-# ===================================================================
-# Інші реєстрації адміністраторів
-# ===================================================================
+class CategoryForm(forms.ModelForm):
+    """Кастомна форма для категорії з правильними віджетами"""
+    
+    class Meta:
+        model = Category
+        fields = '__all__'
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Введіть назву категорії...'
+            }),
+            'slug': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'avtomaticheski'
+            }),
+            'parent': forms.Select(attrs={
+                'class': 'form-control'
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 4,
+                'placeholder': 'Опишіть категорію...'
+            }),
+            'image': forms.ClearableFileInput(attrs={
+                'class': 'form-control-file'
+            }),
+        }
+
+# @admin.register(Category)
+# class CategoryAdmin(DraggableMPTTAdmin):
+#     change_list_template = 'admin/shop/category/change_list.html'
+#     change_form_template = 'admin/shop/category/change_form.html'
+#     list_display = ('tree_actions', 'indented_title', 'slug')
+#     list_display_links = ('indented_title',)
+#     prepopulated_fields = {'slug': ('name',)}
+    
+#     def save_model(self, request, obj, form, change):
+#         if not obj.slug:
+#             obj.slug = slugify(obj.name)
+#         super().save_model(request, obj, form, change)
 
 @admin.register(Category)
-class CategoryAdmin(DraggableMPTTAdmin):
-    list_display = ('tree_actions', 'indented_title', 'slug')
-    list_display_links = ('indented_title',)
+class CategoryAdmin(admin.ModelAdmin):
+    form = CategoryForm
+    change_list_template = 'admin/shop/category/change_list.html'
+    change_form_template = 'admin/shop/category/change_form.html'
+    list_display = ('name', 'slug', 'parent', 'level')
+    list_filter = ('parent',)
+    search_fields = ('name',)
     prepopulated_fields = {'slug': ('name',)}
     
-    def save_model(self, request, obj, form, change):
-        if not obj.slug:
-            obj.slug = slugify(obj.name)
-        super().save_model(request, obj, form, change)
+    def level(self, obj):
+        return obj.level
+    level.short_description = 'Рівень'
 
 
 @admin.register(Brand)
 class BrandAdmin(admin.ModelAdmin):
+    change_list_template = 'admin/shop/brand/change_list.html'
+    change_form_template = 'admin/shop/brand/change_form.html'
     list_display = ('name', 'image_preview')
     search_fields = ('name',)
     prepopulated_fields = {'slug': ('name',)}
     
     def image_preview(self, obj):
         if obj.logo:
-            return mark_safe(f'<img src="{obj.logo.url}" style="width: 50px; height: auto;" />')
+            return mark_safe(f'<img src="{obj.logo.url}" style="width: 40px; height: auto;" />')
         return "Немає логотипу"
     image_preview.short_description = 'Логотип'
 
@@ -326,6 +365,7 @@ class PropertyValueAdmin(admin.ModelAdmin):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
+    change_form_template = 'admin/shop/order/change_form.html'  # Додайте цей рядок
     list_display = ('id', 'full_name', 'phone', 'total_amount', 'status', 'is_paid', 'legal_entity', 'created_at')
     list_filter = ('status', 'is_paid', 'created_at', 'legal_entity')
     search_fields = ('full_name', 'phone', 'email', 'id')
@@ -356,6 +396,51 @@ class OrderAdmin(admin.ModelAdmin):
     )
     
     actions = ['create_invoice_for_selected']
+    
+    def create_invoice_for_selected(self, request, queryset):
+        from .models import Invoice, InvoiceItem
+        from decimal import Decimal
+        
+        created_count = 0
+        for order in queryset:
+            if not order.legal_entity:
+                self.message_user(request, f'Замовлення #{order.id}: не обрано юридичну особу', level='ERROR')
+                continue
+            
+            if not order.invoice_required:
+                self.message_user(request, f'Замовлення #{order.id}: не потрібен рахунок', level='WARNING')
+                continue
+            
+            if Invoice.objects.filter(order=order).exists():
+                self.message_user(request, f'Замовлення #{order.id}: рахунок вже створено', level='WARNING')
+                continue
+            
+            subtotal = Decimal(str(order.total_amount))
+            vat_amount = subtotal * Decimal('0.2')
+            total_amount = subtotal + vat_amount
+            
+            invoice = Invoice.objects.create(
+                legal_entity=order.legal_entity,
+                order=order,
+                subtotal=subtotal,
+                vat_amount=vat_amount,
+                total_amount=total_amount,
+                created_by=request.user.username,
+            )
+            
+            for item in order.products:
+                InvoiceItem.objects.create(
+                    invoice=invoice,
+                    name=item.get('name', 'Товар'),
+                    quantity=Decimal(str(item.get('quantity', 1))),
+                    price=Decimal(str(item.get('price', 0))),
+                    total=Decimal(str(item.get('quantity', 1))) * Decimal(str(item.get('price', 0))),
+                )
+            
+            created_count += 1
+        
+        self.message_user(request, f'✅ Створено рахунків: {created_count}')
+        
     
     @admin.action(description='📄 Створити рахунок-фактуру для вибраних замовлень')
     def create_invoice_for_selected(self, request, queryset):
@@ -429,6 +514,8 @@ class CartAdmin(admin.ModelAdmin):
 
 @admin.register(LegalEntity)
 class LegalEntityAdmin(admin.ModelAdmin):
+    change_list_template = 'admin/shop/legalentity/change_list.html'
+    change_form_template = 'admin/shop/legalentity/change_form.html'
     list_display = ['code_edrpou', 'name', 'short_name', 'phone', 'email', 'is_active']
     list_filter = ['is_active', 'created_at']
     search_fields = ['name', 'code_edrpou', 'short_name', 'phone', 'email']
@@ -480,16 +567,18 @@ class InvoiceItemInline(admin.TabularInline):
 
 @admin.register(Invoice)
 class InvoiceAdmin(admin.ModelAdmin):
+    change_list_template = 'admin/shop/invoice/change_list.html'
+    change_form_template = 'admin/shop/invoice/change_form.html'
     list_display = ['invoice_number', 'invoice_date', 'legal_entity', 'total_amount', 'payment_status', 'due_date']
     list_filter = ['payment_status', 'invoice_date', 'due_date']
     search_fields = ['invoice_number', 'legal_entity__name', 'legal_entity__code_edrpou']
     list_editable = ['payment_status']
-    readonly_fields = ['invoice_number', 'created_at', 'updated_at']  
+    readonly_fields = ['invoice_number', 'created_at', 'updated_at']
     inlines = [InvoiceItemInline]
     
     fieldsets = (
         ('Інформація про документ', {
-            'fields': ('invoice_number', 'legal_entity', 'due_date')  
+            'fields': ('invoice_number', 'invoice_date', 'legal_entity', 'due_date')
         }),
         ('Реквізити продавця', {
             'fields': ('seller', 'seller_code', 'seller_address')
@@ -509,6 +598,70 @@ class InvoiceAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         if not obj.created_by:
             obj.created_by = request.user.username
-        if not obj.invoice_date:
-            obj.invoice_date = datetime.date.today()
         super().save_model(request, obj, form, change)
+
+
+def register_models(admin_site):
+    """
+    Реєстрація всіх моделей в кастомному AdminSite
+    """
+    from .models import (
+        Product, Category, Brand, Order, Invoice, 
+        Review, LegalEntity, Property, PropertyValue, 
+        Service, ServiceCategory, Cart
+    )
+    from .admin import (
+        ProductAdmin, CategoryAdmin, BrandAdmin, OrderAdmin, 
+        ReviewAdmin, LegalEntityAdmin, PropertyAdmin, PropertyValueAdmin,
+        ServiceAdmin, ServiceCategoryAdmin, CartAdmin, InvoiceAdmin
+    )
+    
+    admin_site.register(Product, ProductAdmin)
+    admin_site.register(Category, CategoryAdmin)
+    admin_site.register(Brand, BrandAdmin)
+    admin_site.register(Order, OrderAdmin)
+    admin_site.register(Review, ReviewAdmin)
+    admin_site.register(LegalEntity, LegalEntityAdmin)
+    admin_site.register(Property, PropertyAdmin)
+    admin_site.register(PropertyValue, PropertyValueAdmin)
+    admin_site.register(Service, ServiceAdmin)
+    admin_site.register(ServiceCategory, ServiceCategoryAdmin)
+    admin_site.register(Cart, CartAdmin)
+    admin_site.register(Invoice, InvoiceAdmin)
+    
+    # Реєстрація стандартних моделей Django
+    try:
+        from django.contrib.auth.models import User, Group
+        from django.contrib.auth.admin import UserAdmin, GroupAdmin
+        admin_site.register(User, UserAdmin)
+        admin_site.register(Group, GroupAdmin)
+    except Exception as e:
+        print(f"Помилка реєстрації User/Group: {e}")
+
+
+class ServiceAdmin(admin.ModelAdmin):
+    list_display = ('name', 'service_type', 'price', 'is_active')
+    list_filter = ('service_type', 'is_active', 'category')
+    search_fields = ('name',)
+    prepopulated_fields = {'slug': ('name',)}
+
+
+class ServiceCategoryAdmin(admin.ModelAdmin):
+    list_display = ('name', 'slug', 'parent', 'is_active')
+    list_filter = ('is_active',)
+    search_fields = ('name',)
+    prepopulated_fields = {'slug': ('name',)}
+
+
+@admin.register(AdminNotification)
+class AdminNotificationAdmin(admin.ModelAdmin):
+    list_display = ('title', 'notification_type', 'is_read', 'created_at')
+    list_filter = ('notification_type', 'is_read', 'created_at')
+    search_fields = ('title', 'message')
+    readonly_fields = ('created_at',)
+    
+    def has_add_permission(self, request):
+        return False
+    
+    def has_change_permission(self, request, obj=None):
+        return False

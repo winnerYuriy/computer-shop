@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}Мої замовлення - TechShop{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="mb-4">Мої замовлення</h1>
+    
+    {% if orders %}
+    <div class="table-responsive">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>№ замовлення</th>
+                    <th>Дата</th>
+                    <th>Сума</th>
+                    <th>Статус</th>
+                    <th>Дії</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td>#{{ order.id }}</a></td>
+                    <td>{{ order.created_at|date:"d.m.Y H:i" }}</a></td>
+                    <td>{{ order.total_amount|floatformat:2 }}₴</a></td>
+                    <td>
+                        <span class="badge bg-{% if order.status == 'paid' %}success{% elif order.status == 'cancelled' %}danger{% else %}warning{% endif %}">
+                            {{ order.get_status_display }}
+                        </span>
+                    </a></td>
+                    <td>
+                        <a href="{% url 'shop:order_detail' order.id %}" class="btn btn-sm btn-primary">Деталі</a>
+                    </a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        У вас ще немає замовлень. <a href="{% url 'shop:catalog' %}">Перейти до каталогу</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
