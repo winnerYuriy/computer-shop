@@ -1,0 +1,323 @@
+{% extends "admin/base_sidebar.html" %}
+{% load static %}
+
+{% block title %}Калькулятор послуг та комплектуючих{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+<style>
+    .calculator-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    .calculator-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 16px;
+        padding: 30px;
+        color: white;
+        margin-bottom: 30px;
+    }
+    
+    .service-card {
+        background: white;
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 15px;
+        border: 1px solid #eef2f6;
+        transition: all 0.2s;
+        cursor: pointer;
+    }
+    
+    .service-card:hover {
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        transform: translateY(-2px);
+    }
+    
+    .service-card.selected {
+        border-color: #3b82f6;
+        background: #eff6ff;
+    }
+    
+    .cart-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid #eef2f6;
+    }
+    
+    .total-price {
+        font-size: 24px;
+        font-weight: bold;
+        color: #3b82f6;
+    }
+    
+    .btn-generate {
+        background: #10b981;
+        color: white;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        width: 100%;
+        margin-top: 15px;
+    }
+    
+    .btn-generate:hover {
+        background: #059669;
+    }
+    
+    .cart-summary {
+        position: sticky;
+        top: 100px;
+    }
+    
+    .service-card .badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 10px;
+        font-weight: 600;
+        margin-left: 8px;
+    }
+    
+    .badge-service { background: #dbeafe; color: #1e40af; }
+    .badge-spare_part { background: #dcfce7; color: #166534; }
+    .badge-consumable { background: #fef3c7; color: #92400e; }
+    
+    body.dark-mode .service-card {
+        background: #1e293b;
+        border-color: #334155;
+    }
+    
+    body.dark-mode .service-card.selected {
+        background: #1e3a5f;
+        border-color: #3b82f6;
+    }
+    
+    body.dark-mode .cart-item {
+        border-bottom-color: #334155;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="calculator-container">
+    <div class="calculator-header">
+        <h1><i class="fas fa-calculator"></i> Калькулятор послуг та комплектуючих</h1>
+        <p>Виберіть послуги та комплектуючі для розрахунку вартості</p>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-7">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h3><i class="fas fa-tools"></i> Доступні послуги та комплектуючі</h3>
+                </div>
+                <div class="card-body" style="max-height: 500px; overflow-y: auto;">
+                    {% for category in categories %}
+                    <h4 class="mt-3 mb-2">{{ category.name }}</h4>
+                    {% for service in category.services.all %}
+                    <div class="service-card" data-id="{{ service.id }}" data-name="{{ service.name }}" 
+                         data-price="{{ service.price }}" data-type="{{ service.service_type }}">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ service.name }}</strong>
+                                <span class="badge badge-{{ service.service_type }}">
+                                    {{ service.get_service_type_display }}
+                                </span>
+                                <small class="text-muted d-block">{{ service.description|truncatechars:50 }}</small>
+                            </div>
+                            <div class="text-end">
+                                <div class="h5 text-primary mb-1">{{ service.price }}₴</div>
+                                <button class="btn btn-sm btn-primary add-to-cart mt-1">
+                                    <i class="fas fa-plus"></i> Додати
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted">Немає послуг у цій категорії</p>
+                    {% endfor %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-5">
+            <div class="cart-summary">
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <h3><i class="fas fa-shopping-cart"></i> Кошик замовлення</h3>
+                    </div>
+                    <div class="card-body">
+                        <div id="cart-items">
+                            <p class="text-muted text-center">Кошик порожній</p>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <strong>Всього:</strong>
+                            <span class="total-price" id="total-price">0₴</span>
+                        </div>
+                        <div class="mt-3">
+                            <label class="form-label">Юридична особа</label>
+                            <select id="legal-entity-select" class="form-control">
+                                <option value="">-- Оберіть покупця --</option>
+                                {% for entity in legal_entities %}
+                                <option value="{{ entity.id }}">{{ entity.name }} ({{ entity.code_edrpou }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button class="btn-generate" id="generate-invoice">
+                            <i class="fas fa-file-invoice"></i> Сформувати рахунок-фактуру
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let cart = [];
+    
+    // Додавання в кошик
+    document.querySelectorAll('.add-to-cart').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const card = this.closest('.service-card');
+            const id = parseInt(card.dataset.id);
+            const name = card.dataset.name;
+            const price = parseFloat(card.dataset.price);
+            const type = card.dataset.type;
+            const typeLabel = card.querySelector('.badge')?.innerText || 'Послуга';
+            
+            addToCart(id, name, price, type, typeLabel);
+        });
+    });
+    
+    function addToCart(id, name, price, type, typeLabel) {
+        const existing = cart.find(item => item.id === id);
+        if (existing) {
+            existing.quantity++;
+        } else {
+            cart.push({ id, name, price, type, typeLabel, quantity: 1 });
+        }
+        updateCartDisplay();
+        showNotification(`✅ ${name} додано до кошика`, 'success');
+    }
+    
+    function updateCartDisplay() {
+        const container = document.getElementById('cart-items');
+        if (cart.length === 0) {
+            container.innerHTML = '<p class="text-muted text-center">Кошик порожній</p>';
+            document.getElementById('total-price').innerHTML = '0₴';
+            return;
+        }
+        
+        let html = '';
+        let total = 0;
+        cart.forEach((item, index) => {
+            const itemTotal = item.price * item.quantity;
+            total += itemTotal;
+            html += `
+                <div class="cart-item">
+                    <div>
+                        <strong>${item.name}</strong>
+                        <span class="badge badge-${item.type}">${item.typeLabel}</span>
+                        <div class="text-muted small">{{ item.price }}₴ / шт</div>
+                    </div>
+                    <div class="text-end">
+                        <div class="d-flex align-items-center gap-2">
+                            <input type="number" min="1" value="${item.quantity}" 
+                                   style="width: 60px;" class="form-control form-control-sm"
+                                   onchange="updateQuantity(${index}, this.value)">
+                            <span class="fw-bold">${itemTotal.toFixed(2)}₴</span>
+                            <button class="btn btn-sm btn-danger" onclick="removeFromCart(${index})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        container.innerHTML = html;
+        document.getElementById('total-price').innerHTML = total.toFixed(2) + '₴';
+    }
+    
+    function updateQuantity(index, quantity) {
+        cart[index].quantity = parseInt(quantity);
+        updateCartDisplay();
+    }
+    
+    function removeFromCart(index) {
+        cart.splice(index, 1);
+        updateCartDisplay();
+    }
+    
+    // Підтвердження замовлення
+    document.getElementById('generate-invoice')?.addEventListener('click', function() {
+        const entityId = document.getElementById('legal-entity-select').value;
+        if (!entityId) {
+            alert('Будь ласка, оберіть юридичну особу');
+            return;
+        }
+        if (cart.length === 0) {
+            alert('Додайте послуги або комплектуючі до кошика');
+            return;
+        }
+        
+        const items = cart.map(item => ({
+            id: item.id,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            type: item.type
+        }));
+        
+        fetch('/admin/generate-invoice/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                legal_entity_id: entityId,
+                items: items
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('✅ Рахунок успішно створено!', 'success');
+                setTimeout(() => {
+                    window.open(`/admin/download-invoice/${data.invoice_id}/`, '_blank');
+                }, 500);
+                cart = [];
+                updateCartDisplay();
+            } else {
+                showNotification('❌ Помилка: ' + data.error, 'error');
+            }
+        })
+        .catch(error => {
+            showNotification('❌ Помилка сервера', 'error');
+        });
+    });
+    
+    function showNotification(message, type) {
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type === 'success' ? 'success' : 'danger'} position-fixed`;
+        notification.style.bottom = '20px';
+        notification.style.right = '20px';
+        notification.style.zIndex = '9999';
+        notification.style.minWidth = '250px';
+        notification.innerHTML = message;
+        document.body.appendChild(notification);
+        setTimeout(() => notification.remove(), 3000);
+    }
+</script>
+{% endblock %}

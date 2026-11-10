@@ -1,4 +1,3 @@
-<!-- templates/shop/catalog.html -->
 {% extends 'base.html' %}
 {% load static %}
 
@@ -6,73 +5,46 @@
 
 {% block content %}
 <div class="row">
-    <!-- Фільтри (ліва колонка) -->
     <div class="col-md-3">
         <div class="sidebar-card">
             <h5 class="sidebar-title">Фільтри</h5>
-
             <form method="get" id="filterForm">
-                <!-- Пошук -->
                 <div class="mb-3">
                     <label class="form-label">Пошук</label>
                     <input type="text" name="q" class="form-control" value="{{ search_query }}"
                         placeholder="Назва товару...">
                 </div>
-
-                <!-- Ціна -->
                 <div class="mb-3">
                     <label class="form-label">Ціна</label>
                     <div class="row g-2">
-                        <div class="col-6">
-                            <input type="number" name="price_min" class="form-control" placeholder="від"
-                                value="{{ price_min }}">
-                        </div>
-                        <div class="col-6">
-                            <input type="number" name="price_max" class="form-control" placeholder="до"
-                                value="{{ price_max }}">
-                        </div>
+                        <div class="col-6"><input type="number" name="price_min" class="form-control" placeholder="від"
+                                value="{{ price_min }}"></div>
+                        <div class="col-6"><input type="number" name="price_max" class="form-control" placeholder="до"
+                                value="{{ price_max }}"></div>
                     </div>
                 </div>
-
-                <!-- Бренд -->
                 {% if brands %}
                 <div class="mb-3">
                     <label class="form-label">Бренд</label>
                     <select name="brand" class="form-select">
                         <option value="">Всі бренди</option>
                         {% for brand in brands %}
-                        <option value="{{ brand }}" {% if selected_brand==brand %}selected{% endif %}>{{ brand }}
-                        </option>
+                        <option value="{{ brand.slug }}" {% if selected_brand==brand.slug %}selected{% endif %}>{{
+                            brand.name }}</option>
                         {% endfor %}
                     </select>
                 </div>
                 {% endif %}
-
-                <!-- Оперативна пам'ять -->
-                {% if rams %}
-                <div class="mb-3">
-                    <label class="form-label">RAM (GB)</label>
-                    <select name="ram" class="form-select">
-                        <option value="">Всі</option>
-                        {% for ram in rams %}
-                        <option value="{{ ram }}" {% if selected_ram==ram|stringformat:"s" %}selected{% endif %}>{{ ram
-                            }} GB</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                {% endif %}
-
                 <button type="submit" class="btn btn-primary w-100">Застосувати</button>
                 <a href="{% url 'shop:catalog' %}" class="btn btn-link w-100 mt-2">Скинути всі</a>
             </form>
         </div>
-
         <div class="sidebar-card">
             <h5 class="sidebar-title">Категорії</h5>
             <ul class="category-list">
                 {% for category in categories %}
                 <li>
-                    <a href="{% url 'shop:category_detail' category.full_slug %}">
+                    <a href="{% url 'shop:category_detail' category.slug %}">
                         {{ category.name }}
                     </a>
                 </li>
@@ -81,18 +53,11 @@
         </div>
     </div>
 
-    <!-- Товари (права колонка) -->
     <div class="col-md-9">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
-                {% if current_category %}
-                <h1 class="h3 mb-0">{{ current_category.name }}</h1>
-                {% else %}
-                <h1 class="h3 mb-0">Всі товари</h1>
-                {% endif %}
+                <h1 class="h3 mb-0">{{ current_category.name|default:"Всі товари" }}</h1>
             </div>
-
-            <!-- Сортування -->
             <div>
                 <label class="form-label me-2">Сортувати:</label>
                 <select name="sort" form="filterForm" class="form-select d-inline-block w-auto"
@@ -112,44 +77,37 @@
             <div class="col-md-4 col-sm-6">
                 <div class="product-card">
                     <div class="product-card-img">
-                        {% if product.image %}
-                        <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                        {% if product.main_image %}
+                        <img src="{{ product.main_image.url }}" alt="{{ product.title }}">
                         {% else %}
-                        <div class="bg-light text-center py-4">
-                            <i class="fas fa-image fa-2x text-muted"></i>
-                        </div>
+                        <div class="bg-light text-center py-4"><i class="fas fa-image fa-2x text-muted"></i></div>
                         {% endif %}
-
-                        {% if product.is_new %}
-                        <span class="badge-new">Новинка</span>
-                        {% endif %}
-
-                        {% if product.sale_price %}
-                        <span class="badge-sale">-{{ product.discount_percent }}%</span>
-                        {% endif %}
+                        {% with labels=product.get_promotion_labels %}
+                        {% if 'Новинка' in labels %}<span class="badge-new">Новинка</span>{% endif %}
+                        {% if 'Хіт продажів' in labels %}<span class="badge-sale">Хіт</span>{% endif %}
+                        {% endwith %}
+                        {% if product.final_price < product.price %} <span class="badge-sale">-{{
+                            product.discount_percent }}%</span>
+                            {% endif %}
                     </div>
                     <div class="product-card-body">
-                        <a href="{{ product.get_absolute_url }}" class="product-card-title">
-                            {{ product.name }}
-                        </a>
-                        <div class="product-card-category">
-                            {{ product.category.name }}
-                        </div>
+                        <a href="{{ product.get_absolute_url }}" class="product-card-title">{{
+                            product.title|truncatechars:40 }}</a>
                         <div class="product-card-price">
-                            {% if product.sale_price %}
-                            <span class="product-card-old-price">{{ product.price }}₴</span>
-                            {{ product.sale_price }}₴
-                            {% else %}
-                            {{ product.price }}₴
-                            {% endif %}
+                            {% if product.final_price < product.price %} <span class="product-card-old-price">{{
+                                product.price|floatformat:0 }}₴</span>
+                                <span class="current-price">{{ product.final_price|floatformat:0 }}<span
+                                        class="currency">₴</span></span>
+                                {% else %}
+                                <span class="current-price">{{ product.price|floatformat:0 }}<span
+                                        class="currency">₴</span></span>
+                                {% endif %}
                         </div>
                         {% if product.rating > 0 %}
                         <div class="small text-warning mt-1">
                             {% for i in "12345"|make_list %}
-                            {% if forloop.counter <= product.rating %} <i class="fas fa-star"></i>
-                                {% else %}
-                                <i class="far fa-star"></i>
-                                {% endif %}
+                            {% if forloop.counter <= product.rating %}<i class="fas fa-star"></i>{% else %}<i
+                                    class="far fa-star"></i>{% endif %}
                                 {% endfor %}
                                 <span class="text-muted ms-1">({{ product.reviews_count }})</span>
                         </div>
@@ -159,9 +117,7 @@
             </div>
             {% empty %}
             <div class="col-12">
-                <div class="alert alert-info text-center">
-                    <i class="fas fa-info-circle"></i> Товарів не знайдено
-                </div>
+                <div class="alert alert-info text-center">Товарів не знайдено</div>
             </div>
             {% endfor %}
         </div>
@@ -171,28 +127,47 @@
             <ul class="pagination justify-content-center">
                 {% if page_obj.has_previous %}
                 <li class="page-item">
-                    <a class="page-link" href="?page=1{% if search_query %}&q={{ search_query }}{% endif %}">&laquo;</a>
+                    <a class="page-link"
+                        href="?page=1{% if search_query %}&q={{ search_query }}{% endif %}{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if selected_brand %}&brand={{ selected_brand }}{% endif %}{% if current_sort and current_sort != '-created_at' %}&sort={{ current_sort }}{% endif %}">
+                        &laquo; Перша
+                    </a>
                 </li>
                 <li class="page-item">
                     <a class="page-link"
-                        href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}">‹</a>
+                        href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if selected_brand %}&brand={{ selected_brand }}{% endif %}{% if current_sort and current_sort != '-created_at' %}&sort={{ current_sort }}{% endif %}">
+                        &lsaquo; Попередня
+                    </a>
                 </li>
                 {% endif %}
 
+                {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
                 <li class="page-item active">
-                    <span class="page-link">{{ page_obj.number }}</span>
+                    <span class="page-link">{{ num }}</span>
                 </li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %} <li class="page-item">
+                    <a class="page-link"
+                        href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if selected_brand %}&brand={{ selected_brand }}{% endif %}{% if current_sort and current_sort != '-created_at' %}&sort={{ current_sort }}{% endif %}">
+                        {{ num }}
+                    </a>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
 
-                {% if page_obj.has_next %}
-                <li class="page-item">
-                    <a class="page-link"
-                        href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}">›</a>
-                </li>
-                <li class="page-item">
-                    <a class="page-link"
-                        href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&q={{ search_query }}{% endif %}">&raquo;</a>
-                </li>
-                {% endif %}
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link"
+                            href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if selected_brand %}&brand={{ selected_brand }}{% endif %}{% if current_sort and current_sort != '-created_at' %}&sort={{ current_sort }}{% endif %}">
+                            Наступна &rsaquo;
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link"
+                            href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&q={{ search_query }}{% endif %}{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if selected_brand %}&brand={{ selected_brand }}{% endif %}{% if current_sort and current_sort != '-created_at' %}&sort={{ current_sort }}{% endif %}">
+                            Остання &raquo;
+                        </a>
+                    </li>
+                    {% endif %}
             </ul>
         </nav>
         {% endif %}
@@ -200,11 +175,8 @@
 </div>
 
 <script>
-    // Автоматичне відправлення форми при зміні сортування
     document.querySelectorAll('select[name="sort"]').forEach(select => {
-        select.addEventListener('change', function () {
-            document.getElementById('filterForm').submit();
-        });
+        select.addEventListener('change', function () { document.getElementById('filterForm').submit(); });
     });
 </script>
 {% endblock %}

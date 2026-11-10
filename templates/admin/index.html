@@ -1,54 +1,124 @@
-<!-- templates/admin/index.html -->
-{% extends "admin/index.html" %}
+{% extends "admin/base_sidebar.html" %}
 {% load static %}
+{% load numbers_extras %}
+
+{% block title %}Дашборд - TechShop Admin{% endblock %}
 
 {% block content %}
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 30px;">
-    <div style="background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; padding: 20px; border-radius: 16px;">
-        <i class="fas fa-shopping-cart" style="font-size: 32px; margin-bottom: 10px; display: inline-block;"></i>
-        <h3 style="margin: 0; font-size: 28px;">{{ total_orders|default:"0" }}</h3>
-        <p style="margin: 5px 0 0; opacity: 0.9;">Всього замовлень</p>
+<!-- Статистика -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-card-header">
+            <h3>Всього замовлень</h3>
+            <div class="stat-icon"><i class="fas fa-shopping-cart"></i></div>
+        </div>
+        <div class="stat-value">{{ total_orders|default:"0" }}</div>
+        <div class="stat-change"><i class="fas fa-arrow-up"></i> +{{ orders_growth|default:"0" }}%</div>
     </div>
-    <div style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 20px; border-radius: 16px;">
-        <i class="fas fa-dollar-sign" style="font-size: 32px; margin-bottom: 10px; display: inline-block;"></i>
-        <h3 style="margin: 0; font-size: 28px;">{{ total_revenue|default:"0" }}₴</h3>
-        <p style="margin: 5px 0 0; opacity: 0.9;">Загальний дохід</p>
+    
+    <div class="stat-card">
+        <div class="stat-card-header">
+            <h3>Загальний дохід</h3>
+            <div class="stat-icon"><i class="fas fa-dollar-sign"></i></div>
+        </div>
+        <div class="stat-value">{{ total_revenue|format_currency }}</div>
+        <div class="stat-change"><i class="fas fa-arrow-up"></i> +8%</div>
     </div>
-    <div style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 20px; border-radius: 16px;">
-        <i class="fas fa-users" style="font-size: 32px; margin-bottom: 10px; display: inline-block;"></i>
-        <h3 style="margin: 0; font-size: 28px;">{{ total_customers|default:"0" }}</h3>
-        <p style="margin: 5px 0 0; opacity: 0.9;">Клієнтів</p>
+    
+    <div class="stat-card">
+        <div class="stat-card-header">
+            <h3>Клієнтів</h3>
+            <div class="stat-icon"><i class="fas fa-users"></i></div>
+        </div>
+        <div class="stat-value">{{ total_customers|default:"0" }}</div>
+        <div class="stat-change"><i class="fas fa-arrow-up"></i> +5%</div>
     </div>
-    <div style="background: linear-gradient(135deg, #ef4444, #dc2626); color: white; padding: 20px; border-radius: 16px;">
-        <i class="fas fa-box" style="font-size: 32px; margin-bottom: 10px; display: inline-block;"></i>
-        <h3 style="margin: 0; font-size: 28px;">{{ total_products|default:"0" }}</h3>
-        <p style="margin: 5px 0 0; opacity: 0.9;">Товарів</p>
+    
+    <div class="stat-card">
+        <div class="stat-card-header">
+            <h3>Активних товарів</h3>
+            <div class="stat-icon"><i class="fas fa-box"></i></div>
+        </div>
+        <div class="stat-value">{{ total_products|default:"0" }}</div>
+        <div class="stat-change down"><i class="fas fa-arrow-down"></i> -2%</div>
     </div>
 </div>
 
-{{ block.super }}
+<!-- Останні замовлення -->
+<div class="data-card">
+    <div class="data-card-header">
+        <h3><i class="fas fa-clock"></i> Останні замовлення</h3>
+        <a href="/admin/shop/order/" class="btn btn-primary">Всі замовлення</a>
+    </div>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Клієнт</th>
+                <th>Сума</th>
+                <th>Статус</th>
+                <th>Дата</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in recent_orders %}
+            <tr>
+                <td>#{{ order.id }}</a></td>
+                <td>{{ order.full_name|truncatechars:30 }}</a></td>
+                <td>{{ order.total_amount|floatformat:2 }}₴</a></td>
+                <td>
+                    <span class="badge status-{{ order.status }}">
+                        {{ order.get_status_display }}
+                    </span>
+                </a></td>
+                <td>{{ order.created_at|date:"d.m.Y H:i" }}</a></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" style="text-align: center;">Немає замовлень</a></td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 
-<script>
-    // Додаємо іконки до пунктів меню
-    document.addEventListener('DOMContentLoaded', function() {
-        const menuItems = {
-            'Products': 'fas fa-box',
-            'Categories': 'fas fa-folder',
-            'Orders': 'fas fa-truck',
-            'Users': 'fas fa-user',
-            'Reviews': 'fas fa-star',
-            'Attributes': 'fas fa-tags'
-        };
-        
-        document.querySelectorAll('#content-main .module caption').forEach(caption => {
-            const text = caption.innerText;
-            for (const [key, icon] of Object.entries(menuItems)) {
-                if (text.includes(key)) {
-                    caption.innerHTML = `<i class="${icon}" style="margin-right: 8px;"></i> ${text}`;
-                    break;
-                }
-            }
-        });
-    });
-</script>
+<!-- Останні рахунки -->
+<div class="data-card">
+    <div class="data-card-header">
+        <h3><i class="fas fa-file-invoice"></i> Останні рахунки-фактури</h3>
+        <a href="/admin/shop/invoice/" class="btn btn-primary">Всі рахунки</a>
+    </div>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>№ рахунку</th>
+                <th>Юридична особа</th>
+                <th>Сума</th>
+                <th>Статус</th>
+                <th>Дата</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for invoice in recent_invoices %}
+            <tr>
+                <td><strong>{{ invoice.invoice_number }}</strong></td>
+                <td>{{ invoice.legal_entity.name|truncatechars:30 }}</a></td>
+                <td>{{ invoice.total_amount|floatformat:2 }}₴</a></td>
+                <td>
+                    <span class="badge status-{{ invoice.payment_status }}">
+                        {{ invoice.get_payment_status_display }}
+                    </span>
+                </a></td>
+                <td>{{ invoice.invoice_date|date:"d.m.Y" }}</a></td>
+                <td>
+                    <a href="{% url 'print_invoice' invoice.id %}" class="btn-sm" target="_blank">
+                        <i class="fas fa-file-pdf"></i>
+                    </a>
+                </a></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" style="text-align: center;">Немає рахунків</a></td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}

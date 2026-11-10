@@ -21,14 +21,14 @@ class Cart:
         quantity = int(quantity)
         if quantity <= 0:
             raise ValueError('Кількість має бути більшою за нуль.')
-        if not product.is_active:
+        if not product.is_available:
             raise ValueError('Товар більше недоступний.')
 
         product_id = str(product.id)
         current_quantity = self.get_quantities().get(product_id, 0)
         requested_quantity = quantity if override_quantity else current_quantity + quantity
-        if requested_quantity > product.stock:
-            raise ValueError(f'Доступно лише {product.stock} шт. товару.')
+        if requested_quantity > product.quantity:
+            raise ValueError(f'Доступно лише {product.quantity} шт. товару.')
 
         self.cart[product_id] = {'quantity': requested_quantity}
         
@@ -72,7 +72,7 @@ class Cart:
                 'quantity': quantity,
                 'price': price,
                 'total_price': price * quantity,
-                'available': product.is_active and quantity <= product.stock,
+                'available': product.is_available and quantity <= product.quantity,
             }
     
     def __len__(self):

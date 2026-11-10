@@ -1,0 +1,196 @@
+{% extends "admin/base_sidebar.html" %}
+{% load static %}
+
+{% block title %}Замовлення - TechShop Admin{% endblock %}
+
+{% block content %}
+<div class="data-card">
+    <div class="data-card-header">
+        <h3><i class="fas fa-shopping-cart"></i> Замовлення</h3>
+        <a href="add/" class="btn btn-primary"><i class="fas fa-plus"></i> Додати замовлення</a>
+    </div>
+
+    <div class="filter-bar">
+        <div class="filter-group">
+            <label>Пошук</label>
+            <input type="text" id="search-input" placeholder="№ замовлення, клієнт, телефон...">
+        </div>
+        <div class="filter-group">
+            <label>Статус</label>
+            <select id="status-filter">
+                <option value="">Всі</option>
+                <option value="new">Нове</option>
+                <option value="processing">Обробляється</option>
+                <option value="paid">Оплачено</option>
+                <option value="shipped">Відправлено</option>
+                <option value="delivered">Доставлено</option>
+                <option value="cancelled">Скасовано</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>Дата від</label>
+            <input type="date" id="date-from">
+        </div>
+        <div class="filter-group">
+            <label>Дата до</label>
+            <input type="date" id="date-to">
+        </div>
+    </div>
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Клієнт</th>
+                <th>Телефон</th>
+                <th>Сума</th>
+                <th>Статус</th>
+                <th>Дата</th>
+                <th>Дії</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in cl.result_list %}
+            <tr>
+                <td><strong><a href="{{ order.id }}/change/">#{{ order.id }}</a></strong></td>
+                <td>{{ order.full_name|default:"—" }}<br><small class="text-muted">{{ order.email|default:"—" }}</small></td>
+                <td>{{ order.phone|default:"—" }}</a></td>
+                <td><strong>{{ order.total_amount|floatformat:2 }}₴</strong><br>
+                    <small class="text-muted">{{ order.payment_method|default:"—" }}</small>
+                 </a></td>
+                <td>
+                    {% if order.status == 'paid' %}
+                    <span class="badge badge-success">
+                        <i class="fas fa-check-circle"></i> Оплачено
+                    </span>
+                    {% elif order.status == 'processing' %}
+                    <span class="badge badge-warning">
+                        <i class="fas fa-spinner fa-pulse"></i> Обробляється
+                    </span>
+                    {% elif order.status == 'shipped' %}
+                    <span class="badge badge-info">
+                        <i class="fas fa-truck"></i> Відправлено
+                    </span>
+                    {% elif order.status == 'delivered' %}
+                    <span class="badge badge-primary">
+                        <i class="fas fa-home"></i> Доставлено
+                    </span>
+                    {% elif order.status == 'cancelled' %}
+                    <span class="badge badge-danger">
+                        <i class="fas fa-times-circle"></i> Скасовано
+                    </span>
+                    {% else %}
+                    <span class="badge badge-secondary">
+                        <i class="fas fa-clock"></i> Нове
+                    </span>
+                    {% endif %}
+                 </a></td>
+                <td>{{ order.created_at|date:"d.m.Y H:i" }}</a></td>
+                <td>
+                    <a href="{{ order.id }}/change/" class="btn btn-primary btn-sm" title="Редагувати">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    <a href="{{ order.id }}/delete/" class="btn btn-danger btn-sm" title="Видалити" 
+                       onclick="return confirm('Ви впевнені, що хочете видалити замовлення #{{ order.id }}?');">
+                        <i class="fas fa-trash"></i>
+                    </a>
+                 </a></td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" style="text-align: center;">Немає замовлень</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+    const searchInput = document.getElementById('search-input');
+    const statusFilter = document.getElementById('status-filter');
+    const dateFrom = document.getElementById('date-from');
+    const dateTo = document.getElementById('date-to');
+    
+    function filterTable() {
+        const searchValue = searchInput?.value.toLowerCase() || '';
+        const statusValue = statusFilter?.value || '';
+        const fromDate = dateFrom?.value || '';
+        const toDate = dateTo?.value || '';
+        const rows = document.querySelectorAll('.data-table tbody tr');
+        
+        rows.forEach(row => {
+            const id = row.querySelector('td:nth-child(1) a')?.innerText.toLowerCase() || '';
+            const name = row.querySelector('td:nth-child(2)')?.innerText.toLowerCase() || '';
+            const phone = row.querySelector('td:nth-child(3)')?.innerText.toLowerCase() || '';
+            const statusCell = row.querySelector('td:nth-child(5)');
+            const dateCell = row.querySelector('td:nth-child(6)')?.innerText || '';
+            let show = true;
+            
+            if (searchValue && !id.includes(searchValue) && !name.includes(searchValue) && !phone.includes(searchValue)) {
+                show = false;
+            }
+            
+            if (statusValue && statusCell) {
+                const statusText = statusCell.innerText.toLowerCase();
+                if (statusValue === 'new' && !statusText.includes('нове')) show = false;
+                if (statusValue === 'processing' && !statusText.includes('обробляється')) show = false;
+                if (statusValue === 'paid' && !statusText.includes('оплачено')) show = false;
+                if (statusValue === 'shipped' && !statusText.includes('відправлено')) show = false;
+                if (statusValue === 'delivered' && !statusText.includes('доставлено')) show = false;
+                if (statusValue === 'cancelled' && !statusText.includes('скасовано')) show = false;
+            }
+            
+            if (fromDate && dateCell) {
+                const [day, month, year, time] = dateCell.split(' ');
+                const [d, m, y] = day.split('.');
+                const cellDate = `${y}-${m}-${d}`;
+                if (cellDate < fromDate) show = false;
+            }
+            
+            if (toDate && dateCell) {
+                const [day, month, year, time] = dateCell.split(' ');
+                const [d, m, y] = day.split('.');
+                const cellDate = `${y}-${m}-${d}`;
+                if (cellDate > toDate) show = false;
+            }
+            
+            row.style.display = show ? '' : 'none';
+        });
+    }
+    
+    searchInput?.addEventListener('keyup', filterTable);
+    statusFilter?.addEventListener('change', filterTable);
+    dateFrom?.addEventListener('change', filterTable);
+    dateTo?.addEventListener('change', filterTable);
+</script>
+
+<style>
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    .badge i {
+        font-size: 11px;
+    }
+    .badge-success { background: #d1fae5; color: #065f46; }
+    .badge-warning { background: #fef3c7; color: #92400e; }
+    .badge-info { background: #dbeafe; color: #1e40af; }
+    .badge-primary { background: #cffafe; color: #0e7490; }
+    .badge-danger { background: #fee2e2; color: #991b1b; }
+    .badge-secondary { background: #f1f5f9; color: #475569; }
+    .text-muted { color: #64748b; font-size: 11px; }
+    
+    body.dark-mode .badge-success { background: #0f2a1f; color: #34d399; }
+    body.dark-mode .badge-warning { background: #422b1a; color: #fbbf24; }
+    body.dark-mode .badge-info { background: #1e3a5f; color: #93c5fd; }
+    body.dark-mode .badge-primary { background: #164e63; color: #67e8f9; }
+    body.dark-mode .badge-danger { background: #2a1a1a; color: #f87171; }
+    body.dark-mode .badge-secondary { background: #334155; color: #94a3b8; }
+    body.dark-mode .text-muted { color: #94a3b8; }
+</style>
+{% endblock %}

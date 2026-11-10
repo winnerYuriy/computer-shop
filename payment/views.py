@@ -31,12 +31,12 @@ def update_product_stock(order):
             product = Product.objects.get(id=item['id'])
             quantity = item['quantity']
             
-            if product.stock >= quantity:
-                product.stock -= quantity
-                product.save()
-                print(f"✅ Оновлено залишок {product.name}: -{quantity} (залишилось {product.stock})")
+            if product.quantity >= quantity:
+                product.quantity -= quantity
+                product.save(update_fields=['quantity'])
+                print(f"✅ Оновлено залишок {product.title}: -{quantity} (залишилось {product.quantity})")
             else:
-                print(f"⚠️ Недостатньо товару {product.name}: потрібно {quantity}, є {product.stock}")
+                print(f"⚠️ Недостатньо товару {product.title}: потрібно {quantity}, є {product.quantity}")
         except Product.DoesNotExist:
             print(f"❌ Товар з ID {item['id']} не знайдено")
 

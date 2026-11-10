@@ -3,21 +3,23 @@ from decimal import Decimal
 from django.test import TestCase
 from django.urls import reverse
 
-from shop.models import Category, Order, Product
+from shop.models import Brand, Category, Order, Product
 from .cart import Cart
 
 
 class CartCheckoutTests(TestCase):
 	def setUp(self):
 		category = Category.objects.create(name='Ноутбуки', slug='laptops')
+		brand = Brand.objects.create(name='Тест', slug='test')
 		self.product = Product.objects.create(
-			name='Тестовий ноутбук',
+			title='Тестовий ноутбук',
 			slug='test-laptop',
 			category=category,
+			brand=brand,
 			description='Тестовий товар',
 			price=Decimal('150.00'),
-			sale_price=Decimal('100.00'),
-			stock=5,
+			old_price=Decimal('100.00'),
+			quantity=5,
 		)
 		self.checkout_data = {
 			'full_name': 'Тест Покупець',
@@ -57,8 +59,8 @@ class CartCheckoutTests(TestCase):
 		self.assertEqual(Cart(self.client.get('/cart/').wsgi_request).get_quantities()[str(self.product.id)], 6)
 
 	def test_checkout_rejects_inactive_product(self):
-		self.product.is_active = False
-		self.product.save(update_fields=['is_active'])
+		self.product.available = False
+		self.product.save(update_fields=['available'])
 		self.put_items_in_session({
 			str(self.product.id): {'quantity': 1, 'price': '100.00'},
 		})

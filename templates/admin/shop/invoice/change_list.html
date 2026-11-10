@@ -1,0 +1,174 @@
+{% extends "admin/base_sidebar.html" %}
+{% load static %}
+
+{% block title %}Рахунки-фактури - TechShop Admin{% endblock %}
+
+{% block content %}
+<div class="data-card">
+    <div class="data-card-header">
+        <h3><i class="fas fa-file-invoice"></i> Рахунки-фактури</h3>
+        <a href="{% url 'invoice_form' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Новий рахунок
+        </a>
+    </div>
+
+    <div class="filter-bar">
+        <div class="filter-group">
+            <label>Пошук</label>
+            <input type="text" id="search-input" placeholder="№ рахунку, назва організації...">
+        </div>
+        <div class="filter-group">
+            <label>Статус оплати</label>
+            <select id="status-filter">
+                <option value="">Всі</option>
+                <option value="unpaid">Не оплачений</option>
+                <option value="partial">Частково оплачений</option>
+                <option value="paid">Оплачений</option>
+                <option value="overdue">Прострочений</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>Дата від</label>
+            <input type="date" id="date-from">
+        </div>
+        <div class="filter-group">
+            <label>Дата до</label>
+            <input type="date" id="date-to">
+        </div>
+    </div>
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>№ рахунку</th>
+                <th>Дата</th>
+                <th>Покупець (ЄДРПОУ)</th>
+                <th>Сума</th>
+                <th>ПДВ</th>
+                <th>Статус оплати</th>
+                <th>Дії</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for invoice in cl.result_list %}
+            <tr>
+                <td><strong><a href="{{ invoice.id }}/change/">{{ invoice.invoice_number }}</a></strong></td>
+                <td>{{ invoice.invoice_date|date:"d.m.Y" }}</td>
+                <td>
+                    {{ invoice.legal_entity.name|truncatechars:40 }}
+                    <br><small class="text-muted">{{ invoice.legal_entity.code_edrpou }}</small>
+                 </a></td>
+                <td><strong>{{ invoice.total_amount|floatformat:2 }}₴</strong><br>
+                    <small class="text-muted">без ПДВ: {{ invoice.subtotal|floatformat:2 }}₴</small>
+                 </a></td>
+                <td>{{ invoice.vat_amount|floatformat:2 }}₴<br>
+                    <small class="text-muted">({{ invoice.vat_rate|floatformat:0 }}%)</small>
+                 </a></td>
+                <td>
+                    {% if invoice.payment_status == 'paid' %}
+                    <span class="badge badge-success">Оплачений</span>
+                    {% elif invoice.payment_status == 'partial' %}
+                    <span class="badge badge-warning">Частково</span>
+                    {% elif invoice.payment_status == 'overdue' %}
+                    <span class="badge badge-danger">Прострочений</span>
+                    {% else %}
+                    <span class="badge badge-secondary">Не оплачений</span>
+                    {% endif %}
+                 </a></td>
+                <td>
+                    <a href="{% url 'print_invoice' invoice.id %}" class="btn btn-primary btn-sm" target="_blank" title="Друк PDF">
+                        <i class="fas fa-print"></i>
+                    </a>
+                    <a href="{{ invoice.id }}/change/" class="btn btn-primary btn-sm" title="Редагувати">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    <a href="{{ invoice.id }}/delete/" class="btn btn-danger btn-sm" title="Видалити" 
+                       onclick="return confirm('Ви впевнені, що хочете видалити рахунок №{{ invoice.invoice_number }}?');">
+                        <i class="fas fa-trash"></i>
+                    </a>
+                 </a></td>
+            </tr>
+            {% empty %}
+            </td>
+                <td colspan="7" style="text-align: center;">Немає рахунків</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+    const searchInput = document.getElementById('search-input');
+    const statusFilter = document.getElementById('status-filter');
+    const dateFrom = document.getElementById('date-from');
+    const dateTo = document.getElementById('date-to');
+    
+    function filterTable() {
+        const searchValue = searchInput?.value.toLowerCase() || '';
+        const statusValue = statusFilter?.value || '';
+        const fromDate = dateFrom?.value || '';
+        const toDate = dateTo?.value || '';
+        const rows = document.querySelectorAll('.data-table tbody tr');
+        
+        rows.forEach(row => {
+            const number = row.querySelector('td:nth-child(1) a')?.innerText.toLowerCase() || '';
+            const buyer = row.querySelector('td:nth-child(3)')?.innerText.toLowerCase() || '';
+            const statusCell = row.querySelector('td:nth-child(6)');
+            const dateCell = row.querySelector('td:nth-child(2)')?.innerText || '';
+            let show = true;
+            
+            if (searchValue && !number.includes(searchValue) && !buyer.includes(searchValue)) {
+                show = false;
+            }
+            
+            if (statusValue && statusCell) {
+                const statusText = statusCell.innerText.toLowerCase();
+                if (statusValue === 'unpaid' && !statusText.includes('не оплачений')) show = false;
+                if (statusValue === 'partial' && !statusText.includes('частково')) show = false;
+                if (statusValue === 'paid' && !statusText.includes('оплачений')) show = false;
+                if (statusValue === 'overdue' && !statusText.includes('прострочений')) show = false;
+            }
+            
+            if (fromDate && dateCell) {
+                const [day, month, year] = dateCell.split('.');
+                const cellDate = `${year}-${month}-${day}`;
+                if (cellDate < fromDate) show = false;
+            }
+            
+            if (toDate && dateCell) {
+                const [day, month, year] = dateCell.split('.');
+                const cellDate = `${year}-${month}-${day}`;
+                if (cellDate > toDate) show = false;
+            }
+            
+            row.style.display = show ? '' : 'none';
+        });
+    }
+    
+    searchInput?.addEventListener('keyup', filterTable);
+    statusFilter?.addEventListener('change', filterTable);
+    dateFrom?.addEventListener('change', filterTable);
+    dateTo?.addEventListener('change', filterTable);
+</script>
+
+<style>
+    .badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+    .badge-success { background: #d1fae5; color: #065f46; }
+    .badge-warning { background: #fef3c7; color: #92400e; }
+    .badge-danger { background: #fee2e2; color: #991b1b; }
+    .badge-secondary { background: #f1f5f9; color: #475569; }
+    .text-muted { color: #64748b; font-size: 11px; }
+    
+    body.dark-mode .badge-success { background: #0f2a1f; color: #34d399; }
+    body.dark-mode .badge-warning { background: #422b1a; color: #fbbf24; }
+    body.dark-mode .badge-danger { background: #2a1a1a; color: #f87171; }
+    body.dark-mode .badge-secondary { background: #334155; color: #94a3b8; }
+    body.dark-mode .text-muted { color: #94a3b8; }
+</style>
+{% endblock %}

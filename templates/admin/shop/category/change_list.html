@@ -1,0 +1,76 @@
+{% extends "admin/base_sidebar.html" %}
+{% load static %}
+
+{% block title %}Категорії - TechShop Admin{% endblock %}
+
+{% block content %}
+<div class="data-card">
+    <div class="data-card-header">
+        <h3><i class="fas fa-folder-tree"></i> Категорії</h3>
+        <a href="add/" class="btn btn-primary"><i class="fas fa-plus"></i> Додати категорію</a>
+    </div>
+
+    <div class="filter-bar">
+        <div class="filter-group">
+            <label>Пошук</label>
+            <input type="text" id="search-input" placeholder="Назва категорії...">
+        </div>
+    </div>
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Назва</th>
+                <th>Slug</th>
+                <th>Батьківська категорія</th>
+                <th>Дії</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for category in cl.result_list %}
+            <tr class="{% if category.parent %}child-category{% endif %}">
+                <td>
+                    <a href="{{ category.id }}/change/">{{ category.name }}</a>
+                    {% if category.level > 0 %}
+                        <span class="badge badge-info" style="margin-left: 8px; font-size: 10px;">рівень {{ category.level }}</span>
+                    {% endif %}
+                </td>
+                <td>{{ category.slug }}</td>
+                <td>
+                    {% if category.parent %}
+                        {{ category.parent.name }}
+                    {% else %}
+                        <span class="text-muted">—</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{{ category.id }}/change/" class="btn btn-primary btn-sm" title="Редагувати">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    <a href="{{ category.id }}/delete/" class="btn btn-danger btn-sm" title="Видалити" 
+                       onclick="return confirm('Ви впевнені, що хочете видалити категорію «{{ category.name }}»? Усі підкатегорії також будуть видалені.');">
+                        <i class="fas fa-trash"></i>
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" style="text-align: center;">Немає категорій</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+    // Пошук по назві категорії
+    document.getElementById('search-input')?.addEventListener('keyup', function() {
+        const value = this.value.toLowerCase();
+        const rows = document.querySelectorAll('.data-table tbody tr');
+        rows.forEach(row => {
+            const name = row.querySelector('td:first-child a')?.innerText.toLowerCase() || '';
+            row.style.display = name.includes(value) ? '' : 'none';
+        });
+    });
+</script>
+{% endblock %}

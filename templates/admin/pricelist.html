@@ -1,0 +1,122 @@
+<!-- templates/admin/pricelist.html -->
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}Отримання прайс-листа з Brain API{% endblock %}
+
+{% block extrastyle %}
+<style>
+    .form-row {
+        margin-bottom: 15px;
+    }
+    .form-row label {
+        display: inline-block;
+        width: 150px;
+        font-weight: bold;
+    }
+    .form-row input, .form-row select {
+        width: 250px;
+        padding: 5px;
+    }
+    .result-box {
+        margin-top: 20px;
+        padding: 15px;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+    }
+    .result-box a {
+        word-break: break-all;
+    }
+    .button-group {
+        margin-top: 20px;
+    }
+    .button-group button {
+        margin-right: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Отримання прайс-листа з Brain API</h1>
+    
+    <div class="card">
+        <div class="card-header">
+            <strong>Налаштування</strong>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="form-row">
+                    <label for="target_id">ID пункту видачі:</label>
+                    <input type="text" name="target_id" id="target_id" value="{{ target_id }}" required>
+                    <small class="text-muted">(за замовчуванням: 29)</small>
+                </div>
+                
+                <div class="form-row">
+                    <label for="format">Формат файлу:</label>
+                    <select name="format" id="format">
+                        <option value="xlsx" {% if format_type == 'xlsx' %}selected{% endif %}>Excel (xlsx)</option>
+                        <option value="xls" {% if format_type == 'xls' %}selected{% endif %}>Excel (xls)</option>
+                        <option value="xml" {% if format_type == 'xml' %}selected{% endif %}>XML</option>
+                        <option value="json" {% if format_type == 'json' %}selected{% endif %}>JSON</option>
+                        <option value="php" {% if format_type == 'php' %}selected{% endif %}>PHP</option>
+                    </select>
+                </div>
+                
+                <div class="form-row">
+                    <label for="full">Тип прайс-листа:</label>
+                    <select name="full" id="full">
+                        <option value="0" {% if full_type == '0' %}selected{% endif %}>Тільки локальний склад (повний)</option>
+                        <option value="1" {% if full_type == '1' %}selected{% endif %}>Вся наявність (повний)</option>
+                        <option value="2" {% if full_type == '2' %}selected{% endif %}>Вся наявність (короткий)</option>
+                    </select>
+                </div>
+                
+                <div class="form-row">
+                    <label for="lang">Мова:</label>
+                    <select name="lang" id="lang">
+                        <option value="ua" {% if lang == 'ua' %}selected{% endif %}>Українська</option>
+                        <option value="ru" {% if lang == 'ru' %}selected{% endif %}>Російська</option>
+                    </select>
+                </div>
+                
+                <div class="button-group">
+                    <button type="submit" name="action" value="get_url" class="button btn-primary">
+                        🔗 Отримати посилання
+                    </button>
+                    <button type="submit" name="action" value="download" class="button btn-success">
+                        ⬇️ Завантажити прайс-лист
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    {% if pricelist_url %}
+    <div class="result-box">
+        <h3>📎 Посилання на прайс-лист</h3>
+        <p><a href="{{ pricelist_url }}" target="_blank" rel="noopener noreferrer">{{ pricelist_url }}</a></p>
+    </div>
+    {% endif %}
+    
+    {% if result and result.file_path %}
+    <div class="result-box">
+        <h3>✅ Прайс-лист успішно завантажено</h3>
+        <p>Файл: <strong>{{ result.filename }}</strong></p>
+        <p>Збережено в: <code>{{ result.file_path }}</code></p>
+        <p>
+            <a href="{% url 'admin_download_pricelist' result.filename %}" class="button btn-primary">
+                ⬇️ Скачати файл
+            </a>
+        </p>
+    </div>
+    {% endif %}
+    
+    <div class="mt-4">
+        <a href="{% url 'admin:index' %}" class="button">← Назад до адмінки</a>
+    </div>
+</div>
+{% endblock %}

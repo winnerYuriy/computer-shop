@@ -1,14 +1,13 @@
 from django import forms
 from django_json_widget.widgets import JSONEditorWidget
-from .models import YourModel
+from .models import Product
 
 
-class YourForm(forms.ModelForm):
+class ProductAttributesForm(forms.ModelForm):
     class Meta:
-        model = YourModel
-
-        fields = ('jsonfield',)
+        model = Product
+        fields = ('attributes',)
 
         widgets = {
-            'jsonfield': JSONEditorWidget
+            'attributes': JSONEditorWidget
         }

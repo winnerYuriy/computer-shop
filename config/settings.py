@@ -29,11 +29,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_json_widget',
-  
-    #my app
-    'shop', 
+    'mptt',
+    'shop',  
     'cart',
+    'backup',
     'payment',
+    'accounts',
 ]
 
 MIDDLEWARE = [
@@ -44,6 +45,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'shop.middleware.AdminStatsMiddleware'
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -55,6 +57,7 @@ TEMPLATES = [
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
+                'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
@@ -65,6 +68,16 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'config.wsgi.application'
+
+# Кастомний AdminSite (опціонально)
+from django.contrib.admin import AdminSite
+
+class CustomAdminSite(AdminSite):
+    site_header = 'TechShop Admin'
+    site_title = 'TechShop Admin'
+    index_title = 'Дашборд'
+
+admin_site = CustomAdminSite(name='myadmin')
 
 
 # Database
@@ -80,6 +93,7 @@ DATABASES = {
         'PORT': os.getenv('DB_PORT', '5432'),
     }
 }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
@@ -123,6 +137,14 @@ ADMIN_MEDIA_PREFIX = '/static/admin/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# Заміна стандартної моделі користувача
+AUTH_USER_MODEL = 'accounts.User'
+
+# Налаштування автентифікації
+LOGIN_URL = 'accounts:login'
+LOGIN_REDIRECT_URL = 'shop:home'
+LOGOUT_REDIRECT_URL = 'shop:home'
+
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -134,3 +156,54 @@ LIQPAY_PUBLIC_KEY = os.getenv('LIQPAY_PUBLIC_KEY', '')
 LIQPAY_PRIVATE_KEY = os.getenv('LIQPAY_PRIVATE_KEY', '')
 LIQPAY_SANDBOX = os.getenv('LIQPAY_SANDBOX', 'True') == 'True'
 LIQPAY_SERVER_URL = os.getenv('LIQPAY_SERVER_URL', '')
+
+# Налаштування логування
+LOG_DIR = os.path.join(BASE_DIR, 'logs')
+if not os.path.exists(LOG_DIR):
+    os.makedirs(LOG_DIR)
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{asctime} - {levelname} - {module} - {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{asctime} - {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'import_file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(LOG_DIR, 'import_products.log'),
+            'formatter': 'verbose',
+            'encoding': 'utf-8',
+        },
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+        'import_json': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(LOG_DIR, 'import_products_detail.json'),
+            'maxBytes': 10485760,  # 10 MB
+            'backupCount': 5,
+            'formatter': 'verbose',
+            'encoding': 'utf-8',
+        },
+    },
+    'loggers': {
+        'import_logger': {
+            'handlers': ['import_file', 'console', 'import_json'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}

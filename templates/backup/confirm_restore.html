@@ -1,0 +1,24 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<div class="container" style="max-width: 500px; margin: 50px auto;">
+    <div class="card">
+        <div class="card-header">
+            <h2>⚠️ Підтвердження відновлення</h2>
+        </div>
+        <div class="card-body">
+            <p>Ви збираєтесь відновити базу даних з файлу:</p>
+            <p><strong>{{ backup_name }}</strong></p>
+            <div class="alert alert-warning">
+                <strong>Увага!</strong> Ця дія видалить всі поточні дані та замінить їх даними з бекапу.
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="confirm" value="true">
+                <button type="submit" class="btn btn-danger">Так, відновити</button>
+                <a href="{% url 'backup:dashboard' %}" class="btn btn-secondary">Скасувати</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -5,7 +5,7 @@ from decimal import Decimal
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
-from shop.models import Category, Order, Product
+from shop.models import Brand, Category, Order, Product
 from .views import generate_liqpay_signature
 
 
@@ -18,13 +18,15 @@ from .views import generate_liqpay_signature
 class LiqPayTests(TestCase):
 	def setUp(self):
 		category = Category.objects.create(name='Ноутбуки', slug='laptops')
+		brand = Brand.objects.create(name='Тест', slug='test')
 		self.product = Product.objects.create(
-			name='Тестовий ноутбук',
+			title='Тестовий ноутбук',
 			slug='test-laptop-payment',
 			category=category,
+			brand=brand,
 			description='Тестовий товар',
 			price=Decimal('100.00'),
-			stock=3,
+			quantity=3,
 		)
 		self.order = Order.objects.create(
 			full_name='Тест Покупець',
@@ -32,7 +34,7 @@ class LiqPayTests(TestCase):
 			email='buyer@example.com',
 			products=[{
 				'id': self.product.id,
-				'name': self.product.name,
+				'name': self.product.title,
 				'price': '100.00',
 				'quantity': 1,
 			}],
@@ -84,7 +86,7 @@ class LiqPayTests(TestCase):
 		self.assertEqual(first_response.status_code, 200)
 		self.assertEqual(second_response.status_code, 200)
 		self.assertTrue(self.order.is_paid)
-		self.assertEqual(self.product.stock, 2)
+		self.assertEqual(self.product.quantity, 2)
 
 	def test_callback_rejects_amount_mismatch(self):
 		response = self.make_callback(amount='99.00')
