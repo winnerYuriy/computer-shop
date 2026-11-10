@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}Перевірка оплати - TechShop{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 text-center">
+        <div class="card border-warning">
+            <div class="card-body py-5">
+                <h1 class="mt-3 mb-3">Очікуємо підтвердження оплати</h1>
+                <p class="lead">Замовлення #{{ order.id }} поки не підтверджене платіжною системою.</p>
+                <p>Після підтвердження LiqPay оновіть цю сторінку, щоб побачити статус замовлення.</p>
+                <a href="{% url 'payment:process' order.id %}" class="btn btn-primary mt-3">
+                    Повторити оплату
+                </a>
+                <a href="{% url 'shop:home' %}" class="btn btn-outline-secondary mt-3">
+                    На головну
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

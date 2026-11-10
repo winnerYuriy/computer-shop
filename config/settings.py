@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_json_widget',
   
     #my app
     'shop', 
@@ -132,3 +133,4 @@ CART_SESSION_ID = os.getenv('CART_SESSION_ID','cart')
 LIQPAY_PUBLIC_KEY = os.getenv('LIQPAY_PUBLIC_KEY', '')
 LIQPAY_PRIVATE_KEY = os.getenv('LIQPAY_PRIVATE_KEY', '')
 LIQPAY_SANDBOX = os.getenv('LIQPAY_SANDBOX', 'True') == 'True'
+LIQPAY_SERVER_URL = os.getenv('LIQPAY_SERVER_URL', '')

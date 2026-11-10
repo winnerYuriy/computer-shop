@@ -84,9 +84,10 @@ DB_HOST=localhost
 DB_PORT=5432
 
 ### LiqPay
-LIQPAY_PUBLIC_KEY=sandbox_i1234567890
-LIQPAY_PRIVATE_KEY=sandbox_1234567890
+LIQPAY_PUBLIC_KEY=your_sandbox_public_key
+LIQPAY_PRIVATE_KEY=your_sandbox_private_key
 LIQPAY_SANDBOX=True
+LIQPAY_SERVER_URL=https://your-public-domain.example/payment/callback/
 
 ### Нова Пошта
 NOVA_POSHTA_API_KEY=your_api_key
@@ -172,10 +173,9 @@ GET	/cart/checkout/	Оформлення замовлення
 GET	/payment/process/<int:order_id>/	Оплата LiqPay
 
 ### 🧪 Тестування
-Тестова картка LiqPay
-Номер: 4111 1111 1111 1111
-Термін: будь-який в майбутньому
-CVV: 111
+Для тестової оплати увімкніть `LIQPAY_SANDBOX=True` і використовуйте тестові карткові дані, надані LiqPay у кабінеті мерчанта. Не використовуйте картку `4111 1111 1111 1111`: це тестовий номер Stripe.
+
+Для отримання серверного підтвердження LiqPay має мати доступ до callback URL. Під час локальної розробки задайте `LIQPAY_SERVER_URL` на публічну HTTPS-адресу тунелю, наприклад ngrok, із шляхом `/payment/callback/`.
 
 ### Тестові дані
 

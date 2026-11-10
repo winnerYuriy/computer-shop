@@ -1,10 +1,11 @@
-# shop/admin.py
 
 from django.contrib import admin
 from django.utils.html import format_html
 from django.urls import reverse
 from .models import Category, Product, Attribute, AttributeValue, ProductAttributeValue, Order, Cart, Review
 from django.contrib.admin import AdminSite
+from django.db.models import JSONField  
+from django_json_widget.widgets import JSONEditorWidget 
 
 
 @admin.register(Category)
@@ -68,6 +69,9 @@ class ProductAttributeValueInline(admin.TabularInline):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
+    formfield_overrides = {
+        JSONField: {'widget': JSONEditorWidget},
+    }
     list_display = [
         'id', 'image_preview', 'name', 'category', 'price', 'final_price_display', 
         'stock', 'rating_display', 'reviews_count', 'is_active'
@@ -84,7 +88,7 @@ class ProductAdmin(admin.ModelAdmin):
             'fields': ('name', 'slug', 'category', 'description')
         }),
         ('Ціна та наявність', {
-            'fields': ('price', 'old_price', 'stock')
+            'fields': ('price', 'sale_price', 'stock')
         }),
         ('Рейтинг', {
             'fields': ('rating_display', 'reviews_count'),
@@ -108,9 +112,8 @@ class ProductAdmin(admin.ModelAdmin):
     )
     
     def final_price_display(self, obj):
-        if obj.old_price:
-            discount = int(((obj.price - obj.old_price) / obj.price) * 100)
-            return f"{obj.price}₴ → {obj.old_price}₴ (-{discount}%)"
+        if obj.sale_price is not None:
+            return f"{obj.price}₴ → {obj.sale_price}₴ (-{obj.discount_percent}%)"
         return f'{obj.price}₴'
     final_price_display.short_description = 'Ціна зі знижкою'
     

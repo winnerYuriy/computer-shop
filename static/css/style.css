@@ -319,9 +319,9 @@ main {
 
 .main-image img {
     width: 100%;
-    max-width: 350px;
+    max-width: 450px;
     height: auto;
-    max-height: 300px;
+    max-height: 350px;
     object-fit: contain;
     display: block;
     margin: 0 auto;
@@ -491,12 +491,12 @@ main {
     }
     
     .main-image {
-        max-height: 280px;
+        max-height: 350px;
     }
     
     .main-image img {
-        max-width: 280px;
-        max-height: 240px;
+        max-width: 450;
+        max-height: 350px;
     }
     
     .product-gallery {
@@ -510,8 +510,8 @@ main {
     }
     
     .main-image img {
-        max-width: 320px;
-        max-height: 280px;
+        max-width: 450px;
+        max-height: 350px;
     }
 }
 

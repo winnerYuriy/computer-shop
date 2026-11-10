@@ -181,13 +181,13 @@ class Product(models.Model):
     
     # Ціна та наявність
     price = models.DecimalField('Ціна', max_digits=10, decimal_places=2)
-    old_price = models.DecimalField(
-        'Стара ціна',
+    sale_price = models.DecimalField(
+        'Акційна ціна',
         max_digits=10,
         decimal_places=2,
         blank=True,
         null=True,
-        help_text='Заповніть, якщо товар зі знижкою'
+        help_text='Поточна ціна зі знижкою. Звичайна ціна задається в полі «Ціна».'
     )
     stock = models.PositiveIntegerField('Кількість на складі', default=0)
     
@@ -249,7 +249,7 @@ class Product(models.Model):
     
     @property
     def final_price(self):
-        return self.old_price if self.old_price else self.price
+        return self.sale_price if self.sale_price is not None else self.price
     
     @property
     def is_in_stock(self):
@@ -257,8 +257,8 @@ class Product(models.Model):
     
     @property
     def discount_percent(self):
-        if self.old_price and self.price > 0:
-            return int(((self.price - self.old_price) / self.price) * 100)
+        if self.sale_price is not None and self.price > 0:
+            return int(((self.price - self.sale_price) / self.price) * 100)
         return 0
     
     def get_attributes_by_category(self):

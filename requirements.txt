@@ -2,6 +2,7 @@ asgiref==3.11.1
 certifi==2026.2.25
 charset-normalizer==3.4.7
 Django==6.0.4
+django-admin-json-editor==0.2.3
 idna==3.11
 liqpay==1.0.1
 pillow==12.2.0

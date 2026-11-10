@@ -6,6 +6,7 @@ app_name = 'payment'
 urlpatterns = [
     path('process/<int:order_id>/', views.payment_process, name='process'),
     path('callback/', views.payment_callback, name='callback'),
+    path('result/', views.payment_result, name='result'),
     path('complete/', views.payment_complete, name='complete'),
     path('cancel/', views.payment_cancel, name='cancel'),
 ]
